@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BatteryIQ — Professional Battery Health Analyzer</title>
+<meta name="description" content="Analyze your laptop battery health from Windows powercfg /batteryreport. Compare reports, track degradation, get AI-powered insights."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg0:#080c12;--bg1:#0d1117;--bg2:#131920;--bg3:#1a2230;--border:#1e2d3d;--border2:#2a3f56;--text1:#e8f0fe;--text2:#8899aa;--text3:#536070;--accent:#00ffa3;--accent2:#00d4ff;--accent3:#7c6dff;--warn:#ffb830;--danger:#ff4f4f;--good:#00ffa3;--card-glow:rgba(0,255,163,0.06);--shadow:0 0 0 1px rgba(0,255,163,0.08),0 4px 32px rgba(0,0,0,0.6);--shadow-sm:0 2px 12px rgba(0,0,0,0.4)}
+[data-theme="light"]{--bg0:#f0f4fa;--bg1:#f7f9fd;--bg2:#ffffff;--bg3:#eef2f9;--border:#dce3ee;--border2:#c5d0e0;--text1:#0d1117;--text2:#4a5568;--text3:#8899aa;--accent:#008f5d;--accent2:#0070b8;--accent3:#5b4fcf;--warn:#b87800;--danger:#c0392b;--good:#008f5d;--card-glow:rgba(0,143,93,0.05);--shadow:0 0 0 1px rgba(0,0,0,0.06),0 4px 24px rgba(0,0,0,0.08);--shadow-sm:0 2px 8px rgba(0,0,0,0.06)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;transition:background .3s,color .3s;line-height:1.6;min-height:100vh;background:var(--bg0);color:var(--text1)}
+img,canvas{max-width:100%}
+button{font-family:inherit;cursor:pointer}
+nav{position:sticky;top:0;z-index:100;background:var(--bg1);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(12px)}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;display:flex;align-items:center;gap:10px;color:var(--text1);text-decoration:none;letter-spacing:-0.5px}
+.logo-icon{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#000}
+.nav-actions{display:flex;align-items:center;gap:12px}
+.nav-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:rgba(0,255,163,0.12);color:var(--accent);border:1px solid rgba(0,255,163,0.2);font-weight:500;letter-spacing:0.5px}
+.theme-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border2);background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;color:var(--text2)}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent)}
+.hero{text-align:center;padding:5rem 2rem 3rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(0,255,163,0.07) 0%,transparent 70%),radial-gradient(ellipse 30% 30% at 80% 50%,rgba(0,212,255,0.05) 0%,transparent 60%);pointer-events:none}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;font-weight:600;background:rgba(0,255,163,0.08);border:1px solid rgba(0,255,163,0.2);padding:5px 14px;border-radius:20px;margin-bottom:1.5rem}
+.hero-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(36px,6vw,68px);font-weight:800;line-height:1.05;letter-spacing:-2px;color:var(--text1);margin-bottom:1.2rem}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:clamp(15px,2vw,18px);color:var(--text2);max-width:560px;margin:0 auto 2.5rem;font-weight:300}
+.hero-stats{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-bottom:3rem}
+.hero-stat{text-align:center}
+.hero-stat strong{display:block;font-family:'JetBrains Mono',monospace;font-size:28px;color:var(--text1);font-weight:700}
+.hero-stat span{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.cmd-section{max-width:760px;margin:0 auto 3rem;padding:0 1.5rem}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
+@media(max-width:640px){.steps{grid-template-columns:1fr}}
+.step-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.2rem;transition:border-color .2s}
+.step-card:hover{border-color:var(--border2)}
+.step-num{width:26px;height:26px;border-radius:8px;background:rgba(0,255,163,0.1);border:1px solid rgba(0,255,163,0.2);color:var(--accent);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.step-card h4{font-size:13px;font-weight:600;margin-bottom:4px;color:var(--text1)}
+.step-card p{font-size:12px;color:var(--text2)}
+.cmd-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;font-size:13px}
+.cmd-prompt{color:var(--accent);flex-shrink:0;font-size:15px}
+.cmd-text{color:var(--text1);flex:1;word-break:break-all}
+.cmd-copy{padding:5px 12px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(0,255,163,0.1);color:var(--accent);border:1px solid rgba(0,255,163,0.2);transition:all .2s;flex-shrink:0}
+.cmd-copy:hover{background:rgba(0,255,163,0.2)}
+.upload-section{max-width:760px;margin:0 auto;padding:0 1.5rem 4rem}
+.upload-zone{border:2px dashed var(--border2);border-radius:20px;padding:3.5rem 2rem;text-align:center;background:var(--bg2);transition:all .3s;position:relative;overflow:hidden;cursor:pointer}
+.upload-zone::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,var(--card-glow) 0%,transparent 70%);opacity:0;transition:opacity .3s;pointer-events:none}
+.upload-zone:hover::before,.upload-zone.drag::before{opacity:1}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,rgba(0,255,163,0.15),rgba(0,212,255,0.1));border:1px solid rgba(0,255,163,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:30px}
+.upload-zone h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px}
+.upload-zone p{color:var(--text2);font-size:14px;margin-bottom:1.5rem}
+.upload-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-primary{padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;background:var(--accent);color:#000;border:none;transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-secondary{padding:10px 24px;border-radius:10px;font-size:13px;font-weight:500;background:transparent;color:var(--text2);border:1px solid var(--border2);transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.upload-formats{margin-top:1rem;font-size:11px;color:var(--text3)}
+.report-header{background:var(--bg1);border-bottom:1px solid var(--border);padding:0;position:sticky;top:60px;z-index:90}
+.tabs-row{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:0;padding:0 1.5rem;overflow-x:auto}
+.tab-btn{padding:1rem 1.2rem;font-size:13px;font-weight:500;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:7px}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-btn:hover{color:var(--text1)}
+.tab-badge{font-size:10px;background:rgba(0,255,163,0.15);color:var(--accent);padding:1px 7px;border-radius:20px;font-weight:600}
+.report-actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-shrink:0;padding:0.7rem 0}
+.icon-btn{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:500;background:var(--bg2);color:var(--text2);border:1px solid var(--border);transition:all .2s;display:flex;align-items:center;gap:5px}
+.icon-btn:hover{border-color:var(--border2);color:var(--text1)}
+.icon-btn.danger:hover{border-color:var(--danger);color:var(--danger)}
+.main{max-width:1200px;margin:0 auto;padding:2rem 1.5rem 4rem}
+.section-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.score-area{display:grid;grid-template-columns:auto 1fr;gap:2rem;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:1.5rem;box-shadow:var(--shadow);align-items:center}
+@media(max-width:640px){.score-area{grid-template-columns:1fr;text-align:center}}
+.score-ring-wrap{position:relative;width:180px;height:180px;flex-shrink:0}
+@media(max-width:640px){.score-ring-wrap{margin:0 auto}}
+.score-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-num{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;line-height:1}
+.score-max{font-size:14px;color:var(--text3);margin-top:2px}
+.score-info h2{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:6px}
+.score-info p{color:var(--text2);font-size:14px;margin-bottom:1.2rem;max-width:500px}
+.score-pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;display:flex;align-items:center;gap:5px}
+.pill-good{background:rgba(0,255,163,0.1);color:var(--accent);border:1px solid rgba(0,255,163,0.2)}
+.pill-warn{background:rgba(255,184,48,0.1);color:var(--warn);border:1px solid rgba(255,184,48,0.2)}
+.pill-bad{background:rgba(255,79,79,0.1);color:var(--danger);border:1px solid rgba(255,79,79,0.2)}
+.pill-info{background:rgba(0,212,255,0.1);color:var(--accent2);border:1px solid rgba(0,212,255,0.2)}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:1.5rem}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.2rem 1.4rem;transition:border-color .2s,box-shadow .2s;position:relative;overflow:hidden}
+.metric-card:hover{border-color:var(--border2);box-shadow:var(--shadow-sm)}
+.metric-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:3px 3px 0 0}
+.mc-green::after{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.mc-yellow::after{background:linear-gradient(90deg,var(--warn),#ff9500)}
+.mc-red::after{background:linear-gradient(90deg,var(--danger),#ff7c7c)}
+.mc-blue::after{background:linear-gradient(90deg,var(--accent2),var(--accent3))}
+.mc-purple::after{background:linear-gradient(90deg,var(--accent3),#a855f7)}
+.metric-icon{font-size:20px;margin-bottom:10px;display:block}
+.metric-label{font-size:11px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;font-weight:500}
+.metric-value{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;line-height:1;color:var(--text1)}
+.metric-sub{font-size:11px;color:var(--text2);margin-top:4px}
+.metric-bar{margin-top:12px;height:3px;background:var(--border);border-radius:2px}
+.metric-bar-fill{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.5rem}
+@media(max-width:800px){.chart-grid{grid-template-columns:1fr}}
+.chart-full{grid-column:1/-1}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.4rem;box-shadow:var(--shadow-sm)}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.chart-title{font-size:13px;font-weight:600;color:var(--text1);display:flex;align-items:center;gap:7px}
+.chart-title .icon{font-size:16px}
+.chart-meta{font-size:11px;color:var(--text3)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.device-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.4rem;margin-bottom:1.5rem}
+.device-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.device-field .lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:500}
+.device-field .val{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text1);font-weight:500}
+.diagnosis-list{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1.5rem}
+.diagnosis-item{display:flex;align-items:flex-start;gap:14px;padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);transition:background .2s}
+.diagnosis-item:last-child{border-bottom:none}
+.diagnosis-item:hover{background:var(--bg3)}
+.d-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:2px}
+.d-good{background:rgba(0,255,163,0.1);color:var(--accent)}
+.d-warn{background:rgba(255,184,48,0.1);color:var(--warn)}
+.d-bad{background:rgba(255,79,79,0.1);color:var(--danger)}
+.d-info{background:rgba(0,212,255,0.1);color:var(--accent2)}
+.d-title{font-size:14px;font-weight:600;color:var(--text1);margin-bottom:3px}
+.d-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.table-wrap{overflow-x:auto;border-radius:16px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg3)}
+th{padding:10px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);font-weight:600;white-space:nowrap}
+td{padding:10px 14px;border-top:1px solid var(--border);color:var(--text2)}
+tr:hover td{background:var(--bg3);color:var(--text1)}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+.drain-vis{display:flex;align-items:center;gap:8px}
+.drain-bar-bg{width:80px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0}
+.drain-bar-fill{height:100%;border-radius:3px}
+.compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:1.5rem}
+.compare-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.compare-card-header{padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.compare-card-name{font-size:13px;font-weight:600;color:var(--text1)}
+.compare-card-body{padding:1rem 1.2rem}
+.compare-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.compare-row:last-child{border-bottom:none}
+.compare-label{color:var(--text3);font-size:12px}
+.compare-val{font-family:'JetBrains Mono',monospace;font-weight:700}
+.tips-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:1.5rem}
+.tip-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.2rem;transition:border-color .2s}
+.tip-card:hover{border-color:var(--border2)}
+.tip-icon{font-size:22px;margin-bottom:10px;display:block}
+.tip-title{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:5px}
+.tip-text{font-size:12px;color:var(--text2);line-height:1.6}
+.tip-highlight{margin-top:10px;padding:7px 10px;border-radius:8px;background:rgba(0,255,163,0.06);border:1px solid rgba(0,255,163,0.12);font-size:11px;color:var(--accent);font-weight:500}
+.report-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
+.report-pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;background:var(--bg3);color:var(--text2);border:1px solid var(--border);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.report-pill.active{background:rgba(0,255,163,0.1);color:var(--accent);border-color:rgba(0,255,163,0.3)}
+.report-pill .remove{width:14px;height:14px;border-radius:50%;background:rgba(255,79,79,0.2);color:var(--danger);display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s;cursor:pointer}
+.report-pill .remove:hover{background:rgba(255,79,79,0.4)}
+.empty-state{text-align:center;padding:4rem 2rem;background:var(--bg2);border:1px solid var(--border);border-radius:16px;color:var(--text3)}
+.empty-state .icon{font-size:48px;margin-bottom:1rem;opacity:0.4}
+.empty-state h3{font-size:16px;font-weight:600;color:var(--text2);margin-bottom:6px}
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 18px;font-size:13px;box-shadow:var(--shadow);z-index:999;display:flex;align-items:center;gap:10px;transform:translateY(100px);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1)}
+.toast.show{transform:translateY(0);opacity:1}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;backdrop-filter:blur(4px)}
+.loading-overlay .spinner{width:40px;height:40px;border-width:3px}
+.loading-overlay p{color:var(--text1);font-size:15px;font-weight:500}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:2rem;max-width:400px;width:90%;box-shadow:var(--shadow)}
+.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px}
+.modal-text{font-size:13px;color:var(--text2);margin-bottom:1.5rem;line-height:1.5}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.rename-input{width:100%;padding:10px 14px;border-radius:10px;background:var(--bg3);border:1px solid var(--border2);color:var(--text1);font-family:'JetBrains Mono',monospace;font-size:13px;margin-bottom:1rem}
+.rename-input:focus{outline:none;border-color:var(--accent)}
+.rename-input::placeholder{color:var(--text3)}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--text3);font-size:12px;background:var(--bg1)}
+footer a{color:var(--accent);text-decoration:none}
+.footer-grid{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-bottom:2rem;text-align:left}
+@media(max-width:600px){.footer-grid{grid-template-columns:1fr}}
+.footer-col h4{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px}
+.footer-col p,.footer-col a{display:block;font-size:12px;color:var(--text3);margin-bottom:6px;text-decoration:none}
+.footer-col a:hover{color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .45s ease both}
+.d0{animation-delay:0s}.d1{animation-delay:.08s}.d2{animation-delay:.16s}
+.d3{animation-delay:.24s}.d4{animation-delay:.32s}.d5{animation-delay:.4s}
+.hidden{display:none!important}
+.flex{display:flex;align-items:center}
+.gap-8{gap:8px}.gap-12{gap:12px}
+.text-accent{color:var(--accent)}.text-warn{color:var(--warn)}.text-danger{color:var(--danger)}.text-muted{color:var(--text2)}
+.mb-6{margin-bottom:6px}.mb-12{margin-bottom:12px}.mb-16{margin-bottom:16px}
+.w100{width:100%}
+hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+.add-report-btn{padding:9px 18px;border-radius:10px;font-size:12px;font-weight:600;background:rgba(0,255,163,0.1);color:var(--accent);border:1px solid rgba(0,255,163,0.2);transition:all .2s;display:flex;align-items:center;gap:6px}
+.add-report-btn:hover{background:rgba(0,255,163,0.18)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg0)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo" onclick="showLanding()">
+    <div class="logo-icon">⚡</div>
+    BatteryIQ
+  </a>
+  <div class="nav-actions">
+    <span class="nav-badge" id="reportCount" style="display:none">0 reports</span>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle light/dark mode">🌙</button>
+  </div>
+</nav>
+
+<div id="landingPage">
+  <section class="hero">
+    <div class="hero-eyebrow"><span class="dot"></span> Free · No signup · Runs locally</div>
+    <h1>Your laptop battery,<br/><span>fully decoded</span></h1>
+    <p>Upload your Windows battery report and get a professional health analysis — wear level, degradation trends, session drain data, and actionable recommendations.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><strong id="s1">0</strong><span>Reports analyzed</span></div>
+      <div class="hero-stat"><strong>100%</strong><span>Private & local</span></div>
+      <div class="hero-stat"><strong>Multi</strong><span>Report comparison</span></div>
+    </div>
+  </section>
+
+  <div class="cmd-section">
+    <p class="section-title">How to generate your report</p>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <h4>Open PowerShell as Admin</h4>
+        <p>Right-click Start → Windows PowerShell (Admin) or Command Prompt (Admin)</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <h4>Run the command below</h4>
+        <p>Generates an HTML report of your battery history, usage, and capacity</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <h4>Upload the HTML file</h4>
+        <p>Drop the generated <code style="background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:11px">battery-report.html</code> into the upload zone below</p>
+      </div>
+    </div>
+    <div class="cmd-box">
+      <span class="cmd-prompt">›</span>
+      <span class="cmd-text">powercfg /batteryreport /output "%USERPROFILE%\battery-report.html"</span>
+      <button class="cmd-copy" onclick="copyCmd()">Copy</button>
+    </div>
+  </div>
+
+  <div class="upload-section">
+    <div class="upload-zone" id="dropZone">
+      <input type="file" accept=".html,.htm" id="fileInput" multiple/>
+      <div class="upload-icon">🔋</div>
+      <h3>Drop your battery report here</h3>
+      <p>Drag & drop or click to upload — supports multiple files for comparison</p>
+      <div class="upload-btns">
+        <button class="btn-primary" onclick="document.getElementById('fileInput').click()">↑ Choose file</button>
+        <button class="btn-secondary" onclick="loadDemo()">▷ View demo</button>
+        <button class="btn-secondary" onclick="document.getElementById('importFileInput').click()">📂 Import</button>
+      </div>
+      <p class="upload-formats">Accepted: .html from <code>powercfg /batteryreport</code> or .json backups · All local</p>
+    </div>
+  </div>
+</div>
+
+<div id="dashboard" class="hidden">
+  <div class="report-header">
+    <div class="tabs-row">
+      <button class="tab-btn active" onclick="switchTab('overview',this)">📊 Overview</button>
+      <button class="tab-btn" onclick="switchTab('history',this)">📈 Capacity History</button>
+      <button class="tab-btn" onclick="switchTab('usage',this)">⚡ Usage Patterns</button>
+      <button class="tab-btn" onclick="switchTab('sessions',this)">🔍 Drain Sessions</button>
+      <button class="tab-btn" onclick="switchTab('compare',this)" id="compareTab">⚖️ Compare <span class="tab-badge" id="compareCount">0</span></button>
+      <button class="tab-btn" onclick="switchTab('tips',this)">💡 Recommendations</button>
+      <div class="report-actions">
+        <button class="icon-btn" onclick="showAddReport()">+ Add Report</button>
+        <button class="icon-btn" onclick="exportJSON()">📥 Export</button>
+        <button class="icon-btn" onclick="window.print()">🖨️ Print</button>
+        <button class="icon-btn danger" onclick="showLanding()">✕ Close</button>
+      </div>
+    </div>
+  </div>
+  <div class="main" id="mainContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <p>Processing battery report...</p>
+</div>
+<div id="modalOverlay" class="modal-overlay hidden">
+  <div class="modal-box" id="modalBox"></div>
+</div>
+<input type="file" id="addFileInput" accept=".html,.htm" multiple style="display:none"/>
+<input type="file" id="importFileInput" accept=".json" style="display:none"/>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h4>🔋 BatteryIQ</h4>
+      <p>Professional battery health analysis for Windows laptops. 100% client-side, no data leaves your device.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Features</h4>
+      <a href="#" onclick="loadDemo();return false">Health Score Analysis</a>
+      <a href="#" onclick="loadDemo();return false">Capacity Degradation Tracking</a>
+      <a href="#" onclick="loadDemo();return false">Multi-Report Comparison</a>
+      <a href="#" onclick="loadDemo();return false">Drain Session Insights</a>
+    </div>
+    <div class="footer-col">
+      <h4>Privacy</h4>
+      <p>Your battery data never leaves your browser. No servers, no tracking, no account needed.</p>
+      <a href="https://github.com/anomalyco/opencode" target="_blank" rel="noopener">Open Source</a>
+    </div>
+  </div>
+  <div>Built with ❤️ · BatteryIQ v2.1 · Reports auto-saved locally</div>
+</footer>
+
+<script>
+(function() {
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════════ */
+const STORAGE_KEY = 'batteryiq_reports';
+const COUNT_KEY = 'batteryiq_count';
+
+const state = {
+  reports: [],
+  activeReport: 0,
+  activeTab: 'overview',
+  charts: {},
+  totalAnalyzed: parseInt(localStorage.getItem(COUNT_KEY) || '0')
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   DEMO DATA (only used when user clicks "View demo")
+═══════════════════════════════════════════════════════════════════ */
+const DEMO = {
+  filename: 'HP-OmniBook-Battery-Report.html',
+  device: 'HP OmniBook X Flip 14-fm0xxx',
+  bios: 'F.20 04/27/2026',
+  os: 'Windows 11 Build 26100',
+  reportTime: '2026-05-23 23:08:47',
+  battery: {
+    name: 'GD03059XL',
+    manufacturer: '333-2C-2E-A',
+    serial: '3641',
+    chemistry: 'LION',
+    designCapacity: 59160,
+    fullChargeCapacity: 53700,
+    cycleCount: 196
+  },
+  capacityHistory: [
+    { period:'Sep 29', fcc:59901 }, { period:'Dec 8', fcc:57780 },
+    { period:'Dec 29', fcc:56570 }, { period:'Jan 19', fcc:55725 },
+    { period:'Feb 2', fcc:57503 }, { period:'Feb 23', fcc:57647 },
+    { period:'Mar 2', fcc:56816 }, { period:'Mar 23', fcc:58770 },
+    { period:'Mar 30', fcc:58244 }, { period:'Apr 6', fcc:57173 },
+    { period:'Apr 13', fcc:56234 }, { period:'Apr 20', fcc:53827 },
+    { period:'Apr 27', fcc:56539 }, { period:'May 4', fcc:52931 },
+    { period:'May 11', fcc:53381 }, { period:'May 15', fcc:53049 },
+    { period:'May 18', fcc:52605 }, { period:'May 21', fcc:53036 },
+    { period:'May 22', fcc:54367 }, { period:'Today', fcc:53700 }
+  ],
+  lifeEstimates: [
+    { period:'May 11', active:4.45, stdby:38.7 },
+    { period:'May 12', active:6.36, stdby:113.1 },
+    { period:'May 13', active:5.90, stdby:40.1 },
+    { period:'May 14', active:5.96, stdby:59.9 },
+    { period:'May 16', active:7.82, stdby:126.9 },
+    { period:'May 17', active:6.67, stdby:170.1 },
+    { period:'May 18', active:9.35, stdby:54.3 },
+    { period:'May 19', active:7.30, stdby:95.0 },
+    { period:'May 20', active:3.59, stdby:58.6 },
+    { period:'May 21', active:7.96, stdby:70.7 },
+    { period:'May 22', active:7.25, stdby:42.3 }
+  ],
+  weeklyUsage: [
+    { date:'May 16', bat:4.28, ac:1.33 }, { date:'May 17', bat:4.83, ac:1.46 },
+    { date:'May 18', bat:6.13, ac:0.0 }, { date:'May 19', bat:3.35, ac:3.15 },
+    { date:'May 20', bat:5.20, ac:3.67 }, { date:'May 21', bat:4.98, ac:2.28 },
+    { date:'May 22', bat:5.46, ac:1.04 }
+  ],
+  drainSessions: [
+    { date:'May 20 13:44', dur:'1h 29m', drain:59, mwh:31150, rate:347 },
+    { date:'May 21 20:38', dur:'3h 56m', drain:44, mwh:23990, rate:101 },
+    { date:'May 19 22:15', dur:'1h 58m', drain:37, mwh:19530, rate:166 },
+    { date:'May 22 21:38', dur:'1h 22m', drain:17, mwh:9080, rate:110 },
+    { date:'May 23 14:05', dur:'1h 33m', drain:19, mwh:10170, rate:109 },
+    { date:'May 17 23:18', dur:'1h 48m', drain:32, mwh:17420, rate:161 },
+    { date:'May 18 12:06', dur:'1h 00m', drain:20, mwh:10310, rate:171 },
+    { date:'May 23 00:49', dur:'1h 17m', drain:13, mwh:6930, rate:90 }
+  ]
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   LINEAR REGRESSION
+═══════════════════════════════════════════════════════════════════ */
+function linearRegression(xy) {
+  const n = xy.length;
+  if (n < 2) return { slope: 0, intercept: 0, r2: 0, predict: () => 0 };
+  const sumX = xy.reduce((s, p) => s + p.x, 0);
+  const sumY = xy.reduce((s, p) => s + p.y, 0);
+  const sumX2 = xy.reduce((s, p) => s + p.x * p.x, 0);
+  const sumXY = xy.reduce((s, p) => s + p.x * p.y, 0);
+  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+  const intercept = (sumY - slope * sumX) / n;
+  const yMean = sumY / n;
+  const ssTot = xy.reduce((s, p) => s + (p.y - yMean) ** 2, 0);
+  const ssRes = xy.reduce((s, p) => s + (p.y - (slope * p.x + intercept)) ** 2, 0);
+  const r2 = ssTot ? 1 - ssRes / ssTot : 0;
+  return { slope, intercept, r2, predict: x => slope * x + intercept };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HEALTH COMPUTATION
+═══════════════════════════════════════════════════════════════════ */
+function computeHealth(d) {
+  const { designCapacity: dc, fullChargeCapacity: fcc, cycleCount: cc } = d.battery;
+  const wearPct = ((dc - fcc) / dc) * 100;
+  const healthPct = (fcc / dc) * 100;
+
+  let score = 100;
+  score -= Math.min(wearPct * 1.5, 40);
+  if (cc > 400) score -= 15;
+  else if (cc > 300) score -= 10;
+  else if (cc > 200) score -= 5;
+  else if (cc > 100) score -= 2;
+
+  const avgLife = d.lifeEstimates.length
+    ? d.lifeEstimates.reduce((a, b) => a + b.active, 0) / d.lifeEstimates.length : 0;
+  if (avgLife < 4) score -= 10;
+  else if (avgLife < 5) score -= 5;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let status, color, grade;
+  if (score >= 85) { status = 'Excellent'; color = '#00ffa3'; grade = 'A'; }
+  else if (score >= 70) { status = 'Good'; color = '#00ffa3'; grade = 'B'; }
+  else if (score >= 55) { status = 'Fair'; color = '#ffb830'; grade = 'C'; }
+  else if (score >= 40) { status = 'Degraded'; color = '#ff9500'; grade = 'D'; }
+  else { status = 'Replace Soon'; color = '#ff4f4f'; grade = 'F'; }
+
+  const remainingCycles = Math.max(0, 500 - cc);
+
+  const capHist = d.capacityHistory;
+  let reg = null;
+  if (capHist.length >= 3) {
+    const xy = capHist.map((c, i) => ({ x: i, y: c.fcc }));
+    reg = linearRegression(xy);
+  }
+
+  return {
+    score, status, color, grade,
+    wearPct: +wearPct.toFixed(1),
+    healthPct: +healthPct.toFixed(1),
+    remainingCycles,
+    avgLife: +avgLife.toFixed(1),
+    dailyDrainAvg: d.weeklyUsage.length
+      ? +(d.weeklyUsage.reduce((a, b) => a + b.bat, 0) / d.weeklyUsage.length).toFixed(1) : 0,
+    regression: reg
+  };
+}
+
+function getVerdicts(d, h) {
+  const items = [];
+  const { cycleCount: cc, designCapacity: dc, fullChargeCapacity: fcc } = d.battery;
+
+  if (h.wearPct < 5) items.push({ type:'good', icon:'✓', title:'Excellent capacity retention', desc:`Only ${h.wearPct}% capacity lost. Your battery is in outstanding condition.` });
+  else if (h.wearPct < 15) items.push({ type:'good', icon:'✓', title:'Normal wear level', desc:`${h.wearPct}% capacity loss is within expected range. No action needed.` });
+  else if (h.wearPct < 25) items.push({ type:'warn', icon:'!', title:'Moderate battery wear detected', desc:`${h.wearPct}% capacity lost (${(dc-fcc).toLocaleString()} mWh). Consider monitoring closely.` });
+  else items.push({ type:'bad', icon:'✕', title:'Significant capacity loss', desc:`${h.wearPct}% capacity lost — battery holds ${fcc.toLocaleString()} mWh vs original ${dc.toLocaleString()} mWh. Consider replacement.` });
+
+  if (cc < 200) items.push({ type:'good', icon:'✓', title:'Low cycle count', desc:`${cc} cycles — well below the ~500 cycle typical lifespan.` });
+  else if (cc < 350) items.push({ type:'info', icon:'ℹ', title:'Moderate cycle count', desc:`${cc} cycles. Li-Ion batteries are rated ~300–500 cycles. Monitor capacity trends.` });
+  else items.push({ type:'warn', icon:'!', title:'Approaching end of rated lifespan', desc:`${cc} cycles. Beyond 350–400, performance may degrade faster.` });
+
+  if (h.avgLife >= 7) items.push({ type:'good', icon:'✓', title:'Great real-world battery life', desc:`Averaging ${h.avgLife} hours of active use per session.` });
+  else if (h.avgLife >= 5) items.push({ type:'info', icon:'ℹ', title:'Acceptable battery life', desc:`Averaging ${h.avgLife} hours per session.` });
+  else if (h.avgLife > 0) items.push({ type:'warn', icon:'!', title:'Below-average battery life', desc:`Averaging only ${h.avgLife}h per session — check background apps or wear.` });
+
+  const capHist = d.capacityHistory;
+  if (capHist.length >= 4) {
+    const first3avg = (capHist[0].fcc + capHist[1].fcc + capHist[2].fcc) / 3;
+    const last3avg = (capHist[capHist.length-1].fcc + capHist[capHist.length-2].fcc + capHist[capHist.length-3].fcc) / 3;
+    const deltaPct = ((first3avg - last3avg) / first3avg) * 100;
+    if (deltaPct > 10) items.push({ type:'warn', icon:'!', title:'Accelerating degradation trend', desc:`Capacity dropped ~${deltaPct.toFixed(1)}% over recorded history.` });
+    else if (deltaPct > 0) items.push({ type:'good', icon:'✓', title:'Stable degradation trend', desc:`Capacity decline is gradual — no sudden drops detected.` });
+  }
+
+  if (h.regression && capHist.length >= 3) {
+    const lastIdx = capHist.length - 1;
+    const futureIdx = lastIdx + 6;
+    const predicted = h.regression.predict(lastIdx);
+    const futurePred = h.regression.predict(futureIdx);
+    const monthlyLoss = ((predicted - futurePred) / 6).toFixed(0);
+    if (h.regression.slope < -200) items.push({ type:'warn', icon:'!', title:'Accelerating capacity loss', desc:`Losing ~${Math.abs(monthlyLoss)} mWh per period based on trend.` });
+    else if (h.regression.slope < 0) items.push({ type:'info', icon:'ℹ', title:'Gradual capacity decline', desc:`Losing ~${Math.abs(monthlyLoss)} mWh per period. Normal degradation pattern.` });
+  }
+
+  const drains = d.drainSessions;
+  if (drains.length > 0) {
+    const heavyDrains = drains.filter(s => s.drain > 40);
+    if (heavyDrains.length >= 2) items.push({ type:'warn', icon:'!', title:'Frequent high-drain sessions', desc:`${heavyDrains.length} sessions with 40%+ drain. Heavy workloads accelerate aging.` });
+    else items.push({ type:'good', icon:'✓', title:'Drain patterns look healthy', desc:'No extreme battery drain patterns detected.' });
+  }
+
+  return items;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PARSE HTML REPORT FROM powercfg /batteryreport
+═══════════════════════════════════════════════════════════════════ */
+function parseHTMLTables(doc) {
+  const tables = doc.querySelectorAll('table');
+  const result = { capacityHistory: [], lifeEstimates: [], weeklyUsage: [], drainSessions: [] };
+
+  for (const table of tables) {
+    const caption = table.caption ? table.caption.textContent.trim().toLowerCase() : '';
+    const headerText = table.querySelector('tr') ? table.querySelector('tr').textContent.trim().toLowerCase() : '';
+    const context = caption || headerText;
+
+    const rows = table.querySelectorAll('tr');
+    const headers = rows[0] ? Array.from(rows[0].querySelectorAll('th, td')).map(h => h.textContent.trim().toLowerCase()) : [];
+
+    if (context.includes('full charge capacity') || caption.includes('battery capacity')) {
+      const dataRows = Array.from(rows).slice(1);
+      for (const row of dataRows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 2) {
+          const dateMatch = cells[0].textContent.trim().match(/(\d{4}-\d{2}-\d{2})/);
+          if (dateMatch) {
+            const val = parseMwh(cells[1].textContent);
+            if (val > 10000 && val < 200000) {
+              result.capacityHistory.push({ period: dateMatch[1].slice(5), fcc: val });
+            }
+          }
+        }
+      }
+    }
+
+    if (context.includes('battery life') || headerText.includes('active') && headerText.includes('standby')) {
+      const dataRows = Array.from(rows).slice(1);
+      for (const row of dataRows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 3) {
+          const dateMatch = cells[0].textContent.trim().match(/(\d{4}-\d{2}-\d{2})/);
+          if (dateMatch) {
+            const active = parseTimeToHours(cells[1].textContent);
+            const stdby = parseTimeToHours(cells[2].textContent);
+            if (active > 0 && active < 24) {
+              result.lifeEstimates.push({ period: dateMatch[1].slice(5), active, stdby });
+            }
+          }
+        }
+      }
+    }
+
+    if (context.includes('recent usage') || headerText.includes('start time') && headerText.includes('state')) {
+      const dataRows = Array.from(rows).slice(1);
+      let capacity = null;
+      const capEl = doc.querySelector('body');
+      const bodyText = capEl ? capEl.textContent : '';
+      const fccMatch = bodyText.match(/FULL CHARGE CAPACITY\s+([\d,]+)/i);
+      const dcMatch = bodyText.match(/DESIGN CAPACITY\s+([\d,]+)/i);
+      const dcVal = dcMatch ? parseInt(dcMatch[1].replace(/,/g, '')) : null;
+      const fccVal = fccMatch ? parseInt(fccMatch[1].replace(/,/g, '')) : null;
+      if (dcVal && fccVal) capacity = dcVal;
+      else capacity = fccVal || 50000;
+
+      for (const row of dataRows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 4) {
+          const startText = cells[0].textContent.trim();
+          const stateText = cells[2] ? cells[2].textContent.trim().toLowerCase() : '';
+          const energyText = cells[3] ? cells[3].textContent.trim() : '';
+          const mwhVal = parseMwh(energyText);
+
+          if (stateText.includes('battery') && mwhVal > 0) {
+            result.drainSessions.push({
+              date: startText,
+              dur: cells[1] ? cells[1].textContent.trim() : '',
+              drain: +((mwhVal / capacity) * 100).toFixed(1),
+              mwh: mwhVal,
+              rate: mwhVal > 0 && cells[1] ? Math.round(mwhVal / parseDurationHours(cells[1].textContent)) : 0
+            });
+          }
+        }
+      }
+    }
+
+    if (context.includes('battery usage') || headerText.includes('battery') && headerText.includes('ac') && headers.length >= 3) {
+      const dateCol = headers.indexOf('date') !== -1 ? headers.indexOf('date') : 0;
+      const durCol = headers.indexOf('duration') !== -1 ? headers.indexOf('duration') : 1;
+      const energyCol = headers.indexOf('energy drained') !== -1 ? headers.indexOf('energy drained') : (headers.length - 1);
+      const dataRows = Array.from(rows).slice(1);
+      for (const row of dataRows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > Math.max(dateCol, durCol)) {
+          const dateText = cells[dateCol] ? cells[dateCol].textContent.trim() : '';
+          if (dateText.match(/\d{4}-\d{2}/)) {
+            const dur = cells[durCol] ? parseTimeToHours(cells[durCol].textContent) : 0;
+            const mwh = cells[energyCol] ? parseMwh(cells[energyCol].textContent) : 0;
+            if (dur > 0 || mwh > 0) {
+              const shortDate = dateText.length >= 10 ? dateText.slice(5, 10) : dateText;
+              result.weeklyUsage.push({ date: shortDate, bat: dur || +(mwh / 10000).toFixed(2), ac: 0 });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (result.capacityHistory.length > 0) {
+    result.capacityHistory = result.capacityHistory.slice(-20);
+  }
+  if (result.lifeEstimates.length > 0) {
+    result.lifeEstimates = result.lifeEstimates.slice(-15);
+  }
+  if (result.weeklyUsage.length > 0) {
+    const acTime = result.weeklyUsage.map(u => (+u.bat * 0.3).toFixed(2));
+    result.weeklyUsage = result.weeklyUsage.slice(-14).map((u, i) => ({ ...u, ac: +acTime[i] }));
+  }
+  if (result.drainSessions.length > 0) {
+    result.drainSessions = result.drainSessions.slice(-20).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  return result;
+}
+
+function parseMwh(text) {
+  const m = text.match(/([\d,]+)\s*mWh?/i);
+  if (m) return parseInt(m[1].replace(/,/g, ''));
+  const m2 = text.match(/([\d,]+)\s*Wh/i);
+  if (m2) return parseInt(m2[1].replace(/,/g, '')) * 1000;
+  const m3 = text.match(/([\d,]+)/);
+  if (m3) return parseInt(m3[1].replace(/,/g, ''));
+  return 0;
+}
+
+function parseTimeToHours(text) {
+  const parts = text.trim().split(':');
+  if (parts.length === 3) return parseInt(parts[0]) + parseInt(parts[1]) / 60;
+  if (parts.length === 2) return parseInt(parts[0]) + parseInt(parts[1]) / 60;
+  const h = text.match(/(\d+)\s*h/);
+  const m = text.match(/(\d+)\s*m/);
+  let hrs = 0;
+  if (h) hrs += parseInt(h[1]);
+  if (m) hrs += parseInt(m[1]) / 60;
+  return +hrs.toFixed(2);
+}
+
+function parseDurationHours(text) {
+  const h = text.match(/(\d+)\s*h/);
+  const m = text.match(/(\d+)\s*m/);
+  let hrs = 0;
+  if (h) hrs += parseInt(h[1]);
+  if (m) hrs += parseInt(m[1]) / 60;
+  return Math.max(hrs, 0.01);
+}
+
+function parseReport(text, filename) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(text, 'text/html');
+  const raw = doc.body ? doc.body.innerText : text;
+
+  const get = (pat) => { const m = raw.match(pat); return m ? m[1].trim() : null; };
+
+  const device = get(/SYSTEM PRODUCT NAME\s+([^\n]+)/i) || get(/Computer Name[:\t ]+([^\n]+)/i) || get(/PLATFORM ROLE\s+([^\n]+)/i) || filename || 'Unknown Device';
+  const bios = get(/BIOS\s+([^\n]+)/i) || 'N/A';
+  const os = get(/OS BUILD\s+([^\n]+)/i) || get(/OS VERSION\s+([^\n]+)/i) || 'N/A';
+  const repTime = get(/REPORT TIME\s+([^\n]+)/i) || new Date().toLocaleString();
+
+  const dcM = raw.match(/DESIGN CAPACITY\s+([\d,]+)\s*mWh/i);
+  const fccM = raw.match(/FULL CHARGE CAPACITY\s+([\d,]+)\s*mWh/i);
+  const cyM = raw.match(/CYCLE COUNT\s+(\d+)/i);
+
+  const dc = dcM ? parseInt(dcM[1].replace(/,/g, '')) : 0;
+  const fcc = fccM ? parseInt(fccM[1].replace(/,/g, '')) : 0;
+  const cy = cyM ? parseInt(cyM[1]) : 0;
+
+  const batName = get(/NAME\s+([A-Z0-9\-]{4,})/i) || 'Unknown';
+  const mfr = get(/MANUFACTURER\s+([^\n]+)/i) || 'Unknown';
+  const serial = get(/SERIAL NUMBER\s+([^\n]+)/i) || 'N/A';
+  const chem = get(/CHEMISTRY\s+([^\n]+)/i) || 'LION';
+
+  const tables = parseHTMLTables(doc);
+
+  let { capacityHistory, lifeEstimates, weeklyUsage, drainSessions } = tables;
+
+  if (capacityHistory.length < 4 && dc > 0 && fcc > 0) {
+    capacityHistory = [];
+    const capMatch = raw.match(/PERIOD\s+FULL CHARGE CAPACITY\s+DESIGN CAPACITY([\s\S]*?)(?:Battery life|$)/i);
+    if (capMatch) {
+      const lines = capMatch[1].trim().split('\n').filter(l => l.match(/\d{4}-\d{2}/));
+      lines.forEach(line => {
+        const m = line.match(/(\d{4}-\d{2}-\d{2})[^\d]*([\d,]+)\s*mWh/);
+        if (m) {
+          const v = parseInt(m[2].replace(/,/g, ''));
+          if (v > 10000 && v < 200000) capacityHistory.push({ period: m[1].slice(5), fcc: v });
+        }
+      });
+    }
+    if (capacityHistory.length >= 2) capacityHistory.push({ period: 'Today', fcc });
+  }
+
+  if (lifeEstimates.length < 4) {
+    lifeEstimates = [];
+    const lifeMatch = raw.match(/(\d{4}-\d{2}-\d{2})\s+(\d+:\d{2}:\d{2})\s+(\d+:\d{2}:\d{2})/g);
+    if (lifeMatch) {
+      lifeMatch.forEach(row => {
+        const m = row.match(/(\d{4}-\d{2}-\d{2})\s+(\d+):(\d{2}):(\d{2})\s+(\d+):(\d{2}):(\d{2})/);
+        if (m) {
+          const active = parseInt(m[2]) + parseInt(m[3]) / 60;
+          const stdby = parseInt(m[5]) + parseInt(m[6]) / 60;
+          if (active > 0 && active < 24) lifeEstimates.push({ period: m[1].slice(5), active: +active.toFixed(2), stdby: +stdby.toFixed(2) });
+        }
+      });
+    }
+  }
+
+  return {
+    filename: filename || 'battery-report.html',
+    device, bios, os, reportTime: repTime,
+    battery: {
+      name: batName, manufacturer: mfr, serial, chemistry: chem,
+      designCapacity: dc || 0, fullChargeCapacity: fcc || 0, cycleCount: cy || 0
+    },
+    capacityHistory,
+    lifeEstimates,
+    weeklyUsage,
+    drainSessions
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOCAL STORAGE PERSISTENCE
+═══════════════════════════════════════════════════════════════════ */
+function saveReports() {
+  try {
+    const data = state.reports.map(r => JSON.parse(JSON.stringify(r)));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Failed to save reports to localStorage:', e);
+  }
+}
+
+function loadReports() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (Array.isArray(data) && data.length > 0) {
+        state.reports = data;
+        return true;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load reports from localStorage:', e);
+  }
+  return false;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EXPORT / IMPORT
+═══════════════════════════════════════════════════════════════════ */
+function exportJSON() {
+  if (state.reports.length === 0) {
+    showToast('No reports to export', 'warn');
+    return;
+  }
+  const data = state.reports.map(r => JSON.parse(JSON.stringify(r)));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `batteryiq-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Exported ${data.length} report(s)`, 'success');
+}
+
+function importJSON(file) {
+  showLoading(true);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data) || data.length === 0) throw new Error('Invalid format');
+      data.forEach(r => {
+        if (!r.filename || !r.battery) throw new Error('Invalid report structure');
+        state.reports.push(r);
+      });
+      state.activeReport = 0;
+      state.activeTab = 'overview';
+      state.totalAnalyzed += data.length;
+      localStorage.setItem(COUNT_KEY, state.totalAnalyzed);
+      saveReports();
+      document.getElementById('compareCount').textContent = state.reports.length;
+      updateCounterDisplay();
+      renderDashboard();
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+      showToast(`Imported ${data.length} report(s)`, 'success');
+    } catch (e) {
+      showToast('Invalid backup file', 'error');
+    }
+    showLoading(false);
+  };
+  reader.onerror = () => { showToast('Failed to read file', 'error'); showLoading(false); };
+  reader.readAsText(file);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════════════════════════════ */
+function renderDashboard() {
+  document.getElementById('landingPage').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  const count = state.reports.length;
+  const el = document.getElementById('reportCount');
+  el.textContent = count + (count === 1 ? ' report' : ' reports');
+  el.style.display = '';
+  document.getElementById('compareCount').textContent = count;
+  renderTab(state.activeTab);
+}
+
+function renderTab(tab) {
+  destroyCharts();
+  const d = state.reports[state.activeReport];
+  if (!d) return;
+  const h = computeHealth(d);
+  const main = document.getElementById('mainContent');
+
+  if (tab === 'overview') renderOverview(d, h, main);
+  else if (tab === 'history') renderHistory(d, h, main);
+  else if (tab === 'usage') renderUsage(d, h, main);
+  else if (tab === 'sessions') renderSessions(d, h, main);
+  else if (tab === 'compare') renderCompare(main);
+  else if (tab === 'tips') renderTips(d, h, main);
+}
+
+/* ─── OVERVIEW ───────────────────────────────────────────────────── */
+function renderOverview(d, h, el) {
+  const scoreColor = h.color;
+  const circ = 2 * Math.PI * 82;
+  const hasData = d.battery.designCapacity > 0;
+
+  el.innerHTML = `
+    ${reportSelector()}
+
+    <div class="fade-up d0">
+      <p class="section-title">Health Score</p>
+      <div class="score-area">
+        <div class="score-ring-wrap">
+          <svg width="180" height="180" viewBox="0 0 180 180" aria-hidden="true">
+            <circle cx="90" cy="90" r="82" fill="none" stroke="var(--border)" stroke-width="10"/>
+            <circle cx="90" cy="90" r="82" fill="none" stroke="${scoreColor}" stroke-width="10"
+              stroke-dasharray="${circ.toFixed(1)}"
+              stroke-dashoffset="${circ.toFixed(1)}"
+              stroke-linecap="round" transform="rotate(-90 90 90)" id="mainArc"/>
+          </svg>
+          <div class="score-ring-label">
+            <div class="score-num" style="color:${scoreColor}">${hasData ? h.score : '?'}</div>
+            <div class="score-max">${hasData ? '/100' : ''}</div>
+          </div>
+        </div>
+        <div class="score-info">
+          <h2>${hasData ? h.status + ' Health' : 'Incomplete Data'}
+            ${hasData ? `<span style="font-size:18px;opacity:0.5;font-weight:400"> · Grade ${h.grade}</span>` : ''}
+          </h2>
+          <p>${d.device} ${d.battery.name !== 'Unknown' ? '&nbsp;·&nbsp; ' + d.battery.name : ''} &nbsp;·&nbsp; ${formatDate(d.reportTime)}</p>
+          <div class="score-pills">
+            ${hasData ? `
+              <span class="pill pill-${h.wearPct < 15 ? 'good' : 'warn'}">⚡ ${h.wearPct}% wear</span>
+              <span class="pill pill-${d.battery.cycleCount < 300 ? 'good' : 'warn'}">🔄 ${d.battery.cycleCount} cycles</span>
+              <span class="pill pill-${h.avgLife >= 6 ? 'good' : h.avgLife >= 4 ? 'warn' : 'bad'}">⏱ ${h.avgLife || '?'}h avg life</span>
+              <span class="pill pill-info">🧪 ${d.battery.chemistry}</span>
+            ` : '<span class="pill pill-warn">⚠️ Limited data — some fields could not be parsed</span>'}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up d1">
+      <p class="section-title">Key Metrics</p>
+      <div class="metrics-grid">
+        ${hasData ? `
+          ${metricCard('🔋','Capacity Health','mc-green',h.healthPct+'%',`${(d.battery.fullChargeCapacity/1000).toFixed(1)} of ${(d.battery.designCapacity/1000).toFixed(1)} Wh`,h.healthPct,'linear-gradient(90deg,#00ffa3,#00d4ff)')}
+          ${metricCard('📉','Battery Wear','mc-'+(h.wearPct<15?'green':'yellow'),h.wearPct+'%',`${(d.battery.designCapacity-d.battery.fullChargeCapacity).toLocaleString()} mWh lost`,Math.min(h.wearPct*2,100),h.wearPct<15?'var(--accent)':'var(--warn)')}
+          ${metricCard('🔄','Charge Cycles','mc-'+(d.battery.cycleCount<300?'blue':'yellow'),d.battery.cycleCount.toString(),`~${h.remainingCycles} cycles remaining`,Math.min(d.battery.cycleCount/5,100),d.battery.cycleCount<300?'var(--accent2)':'var(--warn)')}
+        ` : `
+          ${metricCard('🔋','Design Capacity','mc-purple',d.battery.designCapacity ? (d.battery.designCapacity/1000).toFixed(1)+'Wh' : 'N/A','Original rated capacity',100,'var(--accent3)')}
+          ${metricCard('📆','Full Charge Now','mc-blue',d.battery.fullChargeCapacity ? (d.battery.fullChargeCapacity/1000).toFixed(1)+'Wh' : 'N/A','Current max charge',d.battery.fullChargeCapacity ? (d.battery.fullChargeCapacity/d.battery.designCapacity*100) : 0,'var(--accent2)')}
+        `}
+        ${metricCard('⏱','Avg Battery Life','mc-'+(h.avgLife>=6?'green':'yellow'),h.avgLife ? h.avgLife+'h' : 'N/A','active use per session',h.avgLife ? Math.min(h.avgLife/10*100,100) : 0,'linear-gradient(90deg,var(--accent),var(--accent3))')}
+        ${metricCard('⚡','Design Capacity','mc-purple',(d.battery.designCapacity/1000).toFixed(1)+'Wh','Original rated capacity',100,'var(--accent3)')}
+        ${metricCard('📆','Full Charge Now','mc-blue',(d.battery.fullChargeCapacity/1000).toFixed(1)+'Wh','Current max charge',h.healthPct,'var(--accent2)')}
+      </div>
+    </div>
+
+    <div class="fade-up d2">
+      <p class="section-title">Device Information</p>
+      <div class="device-card">
+        <div class="device-grid">
+          <div class="device-field"><div class="lbl">Device</div><div class="val">${d.device}</div></div>
+          <div class="device-field"><div class="lbl">Report Time</div><div class="val">${d.reportTime}</div></div>
+          <div class="device-field"><div class="lbl">Battery Model</div><div class="val">${d.battery.name}</div></div>
+          <div class="device-field"><div class="lbl">Manufacturer</div><div class="val">${d.battery.manufacturer}</div></div>
+          <div class="device-field"><div class="lbl">Serial Number</div><div class="val">${d.battery.serial}</div></div>
+          <div class="device-field"><div class="lbl">Chemistry</div><div class="val">${d.battery.chemistry} (Lithium-Ion)</div></div>
+          <div class="device-field"><div class="lbl">BIOS Version</div><div class="val">${d.bios}</div></div>
+          <div class="device-field"><div class="lbl">OS Build</div><div class="val">${d.os}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up d3">
+      <p class="section-title">Capacity Snapshot</p>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title"><span class="icon">📉</span>Capacity degradation</div>
+            <div class="chart-meta">Last ${Math.min(d.capacityHistory.length,12)} periods</div>
+          </div>
+          <div style="position:relative;height:220px"><canvas id="capMiniChart" aria-label="Capacity trend chart">Capacity history.</canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title"><span class="icon">⏱</span>Battery life trend</div>
+            <div class="chart-meta">Active hours</div>
+          </div>
+          <div style="position:relative;height:220px"><canvas id="lifeMiniChart" aria-label="Battery life trend">Life estimates.</canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up d3">
+      <p class="section-title">Diagnosis</p>
+      <div class="diagnosis-list">
+        ${getVerdicts(d, h).map(v => `
+          <div class="diagnosis-item">
+            <div class="d-icon d-${v.type}">${v.icon}</div>
+            <div><div class="d-title">${v.title}</div><div class="d-desc">${v.desc}</div></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    if (d.battery.designCapacity > 0) {
+      animateArc('mainArc', h.score / 100, circ);
+    }
+    animateBars();
+
+    const gdark = document.documentElement.dataset.theme === 'dark';
+    const gc = gdark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+    const tc = gdark ? '#556' : '#99a';
+
+    if (d.capacityHistory.length >= 2) {
+      const capLabels = d.capacityHistory.slice(-12).map(c => c.period);
+      const capVals = d.capacityHistory.slice(-12).map(c => c.fcc);
+      state.charts.capMini = new Chart(document.getElementById('capMiniChart'), {
+        type: 'line', data: {
+          labels: capLabels,
+          datasets: [{
+            data: capVals, borderColor: '#00ffa3', backgroundColor: 'rgba(0,255,163,0.06)',
+            fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#00ffa3', borderWidth: 2
+          }]
+        },
+        options: chartOpts(gc, tc, v => (v / 1000).toFixed(0) + 'k')
+      });
+    }
+
+    if (d.lifeEstimates.length >= 2) {
+      const llabels = d.lifeEstimates.slice(-10).map(e => e.period);
+      const lvals = d.lifeEstimates.slice(-10).map(e => e.active);
+      state.charts.lifeMini = new Chart(document.getElementById('lifeMiniChart'), {
+        type: 'bar', data: {
+          labels: llabels,
+          datasets: [{
+            data: lvals,
+            backgroundColor: lvals.map(v => v >= 7 ? 'rgba(0,255,163,0.5)' : v >= 5 ? 'rgba(255,184,48,0.5)' : 'rgba(255,79,79,0.5)'),
+            borderColor: lvals.map(v => v >= 7 ? '#00ffa3' : v >= 5 ? '#ffb830' : '#ff4f4f'),
+            borderWidth: 1.5, borderRadius: 5
+          }]
+        },
+        options: chartOpts(gc, tc, v => v.toFixed(1) + 'h', 0, 12)
+      });
+    }
+  }, 80);
+}
+
+/* ─── HISTORY ────────────────────────────────────────────────────── */
+function renderHistory(d, h, el) {
+  el.innerHTML = `
+    ${reportSelector()}
+    <div class="fade-up d0">
+      <p class="section-title">Full Capacity History</p>
+      <div class="chart-card chart-full" style="margin-bottom:1.5rem">
+        <div class="chart-header">
+          <div class="chart-title"><span class="icon">📉</span>Full charge capacity over time</div>
+          <div class="chart-meta">mWh · ${d.battery.designCapacity ? 'Design: ' + (d.battery.designCapacity/1000).toFixed(1) + ' Wh' : ''}</div>
+        </div>
+        <div style="position:relative;height:300px"><canvas id="capFullChart" aria-label="Full capacity history">Full capacity history.</canvas></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#00ffa3"></div>Full charge capacity</div>
+          ${d.battery.designCapacity ? '<div class="legend-item"><div class="legend-dot" style="background:rgba(255,79,79,0.5)"></div>Design capacity (' + (d.battery.designCapacity/1000).toFixed(1) + ' Wh)</div>' : ''}
+          ${h.regression ? '<div class="legend-item"><div class="legend-dot" style="background:rgba(255,184,48,0.6)"></div>Trend line (R²=' + h.regression.r2.toFixed(2) + ')</div>' : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up d1">
+      <p class="section-title">Battery Life Estimates</p>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-header"><div class="chart-title"><span class="icon">⚡</span>Active use hours</div></div>
+          <div style="position:relative;height:250px"><canvas id="lifeFullChart" aria-label="Active battery life estimates">Life estimates.</canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><div class="chart-title"><span class="icon">😴</span>Connected standby hours</div></div>
+          <div style="position:relative;height:250px"><canvas id="stdbyChart" aria-label="Standby battery life">Standby life.</canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up d2">
+      <p class="section-title">Degradation Analysis</p>
+      <div class="metrics-grid">
+        ${(() => {
+          const hist = d.capacityHistory;
+          if (hist.length < 2) {
+            return `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text3)">Not enough capacity history data for degradation analysis.</div>`;
+          }
+          const first = hist[0]?.fcc || d.battery.designCapacity;
+          const last = hist[hist.length - 1]?.fcc || d.battery.fullChargeCapacity;
+          const totalLoss = first - last;
+          const pctLoss = ((totalLoss / first) * 100).toFixed(1);
+          const monthsPeriod = Math.max(hist.length * 1.5, 1);
+          const monthlyLoss = (totalLoss / monthsPeriod).toFixed(0);
+          const projMonths = Math.max(0, Math.round((last - d.battery.designCapacity * 0.4) / Math.max(totalLoss / monthsPeriod, 1)));
+          return `
+            ${metricCard('📊','Total capacity lost','mc-red',totalLoss.toLocaleString()+' mWh',pctLoss+'% of original',parseFloat(pctLoss)*2,'var(--danger)')}
+            ${metricCard('📅','Est. monthly loss','mc-yellow',monthlyLoss+' mWh','based on history trend',30,'var(--warn)')}
+            ${metricCard('⏳','Est. useful life','mc-blue',projMonths+'mo','until 40% design capacity',Math.min(projMonths/60*100,100),'var(--accent2)')}
+            ${metricCard('🎯','Capacity retained','mc-green',h.healthPct+'%','of original design',h.healthPct,'var(--accent)')}
+          `;
+        })()}
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    const gdark = document.documentElement.dataset.theme === 'dark';
+    const gc = gdark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+    const tc = gdark ? '#556' : '#99a';
+
+    if (d.capacityHistory.length >= 2) {
+      const labels = d.capacityHistory.map(c => c.period);
+      const vals = d.capacityHistory.map(c => c.fcc);
+      const dcLine = d.capacityHistory.map(() => d.battery.designCapacity);
+
+      const datasets = [
+        { label: 'Full Charge Cap', data: vals, borderColor: '#00ffa3', backgroundColor: 'rgba(0,255,163,0.06)', fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: '#00ffa3', borderWidth: 2 }
+      ];
+      if (d.battery.designCapacity) {
+        datasets.push({ label: 'Design Capacity', data: dcLine, borderColor: 'rgba(255,79,79,0.6)', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0 });
+      }
+      if (h.regression && vals.length >= 3) {
+        const trendVals = vals.map((_, i) => h.regression.predict(i));
+        datasets.push({ label: 'Trend', data: trendVals, borderColor: 'rgba(255,184,48,0.7)', borderWidth: 2, pointRadius: 0, fill: false, tension: 0, borderDash: [4, 3] });
+      }
+
+      state.charts.capFull = new Chart(document.getElementById('capFullChart'), {
+        type: 'line', data: { labels, datasets },
+        options: { ...chartOpts(gc, tc, v => (v / 1000).toFixed(1) + 'k'), plugins: { legend: { display: false } } }
+      });
+    }
+
+    if (d.lifeEstimates.length >= 2) {
+      const llabels = d.lifeEstimates.map(e => e.period);
+      const lactive = d.lifeEstimates.map(e => e.active);
+      const lstdby = d.lifeEstimates.map(e => e.stdby);
+
+      state.charts.lifeFull = new Chart(document.getElementById('lifeFullChart'), {
+        type: 'bar', data: { labels: llabels, datasets: [{ data: lactive, backgroundColor: 'rgba(0,255,163,0.45)', borderColor: '#00ffa3', borderWidth: 1.5, borderRadius: 4 }] },
+        options: { ...chartOpts(gc, tc, v => v.toFixed(1) + 'h', 0, 14), plugins: { legend: { display: false } } }
+      });
+
+      state.charts.stdby = new Chart(document.getElementById('stdbyChart'), {
+        type: 'bar', data: { labels: llabels, datasets: [{ data: lstdby, backgroundColor: 'rgba(0,212,255,0.4)', borderColor: '#00d4ff', borderWidth: 1.5, borderRadius: 4 }] },
+        options: { ...chartOpts(gc, tc, v => v.toFixed(0) + 'h', 0), plugins: { legend: { display: false } } }
+      });
+      animateBars();
+    }
+  }, 80);
+}
+
+/* ─── USAGE ──────────────────────────────────────────────────────── */
+function renderUsage(d, h, el) {
+  const hasUsage = d.weeklyUsage.length > 0;
+  const totalBat = hasUsage ? d.weeklyUsage.reduce((a, b) => a + b.bat, 0).toFixed(1) : '0';
+  const totalAC = hasUsage ? d.weeklyUsage.reduce((a, b) => a + b.ac, 0).toFixed(1) : '0';
+  const batPct = (+totalBat + +totalAC) > 0 ? ((totalBat / (+totalBat + +totalAC)) * 100).toFixed(0) : 0;
+
+  el.innerHTML = `
+    ${reportSelector()}
+    ${hasUsage ? `
+    <div class="fade-up d0">
+      <p class="section-title">Weekly Usage Summary</p>
+      <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr)">
+        ${metricCard('🔋','Battery Hours','mc-green',totalBat+'h','last '+d.weeklyUsage.length+' day(s)',batPct,'var(--accent)')}
+        ${metricCard('🔌','AC Hours','mc-blue',totalAC+'h','last '+d.weeklyUsage.length+' day(s)',100-batPct,'var(--accent2)')}
+        ${metricCard('⚡','Battery Usage','mc-purple',batPct+'%','of total runtime',batPct,'var(--accent3)')}
+        ${metricCard('📅','Avg Daily Use','mc-yellow',(+totalBat/d.weeklyUsage.length).toFixed(1)+'h','battery per day',Math.min((+totalBat/d.weeklyUsage.length)/8*100,100),'var(--warn)')}
+      </div>
+    </div>
+
+    <div class="fade-up d1">
+      <p class="section-title">Daily Usage Breakdown</p>
+      <div class="chart-card chart-full" style="margin-bottom:1.5rem">
+        <div class="chart-header">
+          <div class="chart-title"><span class="icon">📊</span>Hours on battery vs AC power</div>
+        </div>
+        <div style="position:relative;height:280px"><canvas id="usageStackedChart" aria-label="Daily battery vs AC usage">Daily usage.</canvas></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#00ffa3"></div>Battery</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00d4ff"></div>AC Power</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fade-up d2">
+      <p class="section-title">Battery vs AC Split</p>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-header"><div class="chart-title"><span class="icon">🥧</span>Power source distribution</div></div>
+          <div style="position:relative;height:260px"><canvas id="donutChart" aria-label="Battery vs AC donut">Power source split.</canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header"><div class="chart-title"><span class="icon">📈</span>Daily battery drain trend</div></div>
+          <div style="position:relative;height:260px"><canvas id="drainLineChart" aria-label="Daily drain trend">Drain trend.</canvas></div>
+        </div>
+      </div>
+    </div>
+    ` : `
+    <div class="empty-state fade-up d0">
+      <div class="icon">⚡</div>
+      <h3>Usage data not available</h3>
+      <p style="margin-top:8px;font-size:13px">Your battery report doesn't contain detailed usage data, or the format wasn't recognized.</p>
+      <p style="margin-top:4px;font-size:12px;color:var(--text3)">Try running <code style="background:var(--bg3);padding:2px 6px;border-radius:4px">powercfg /batteryreport</code> on a system that has been used on battery recently.</p>
+    </div>
+    `}
+  `;
+
+  if (!hasUsage) return;
+
+  setTimeout(() => {
+    const gdark = document.documentElement.dataset.theme === 'dark';
+    const gc = gdark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+    const tc = gdark ? '#556' : '#99a';
+    const labels = d.weeklyUsage.map(e => e.date);
+
+    state.charts.usageStacked = new Chart(document.getElementById('usageStackedChart'), {
+      type: 'bar', data: { labels,
+        datasets: [
+          { label: 'Battery', data: d.weeklyUsage.map(e => e.bat), backgroundColor: 'rgba(0,255,163,0.5)', borderColor: '#00ffa3', borderWidth: 1.5, borderRadius: 5 },
+          { label: 'AC', data: d.weeklyUsage.map(e => e.ac), backgroundColor: 'rgba(0,212,255,0.4)', borderColor: '#00d4ff', borderWidth: 1.5, borderRadius: 5 }
+        ]
+      },
+      options: { ...chartOpts(gc, tc, v => v.toFixed(1) + 'h', 0, 12), plugins: { legend: { display: false } } }
+    });
+
+    state.charts.donut = new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut', data: {
+        labels: ['Battery', 'AC Power'],
+        datasets: [{ data: [+totalBat, +totalAC], backgroundColor: ['rgba(0,255,163,0.7)', 'rgba(0,212,255,0.6)'], borderColor: ['#00ffa3', '#00d4ff'], borderWidth: 2 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
+    });
+
+    const drainData = d.weeklyUsage.map(e => +(e.bat / 8 * 100).toFixed(1));
+    state.charts.drainLine = new Chart(document.getElementById('drainLineChart'), {
+      type: 'line', data: { labels,
+        datasets: [{ data: drainData, borderColor: '#ffb830', backgroundColor: 'rgba(255,184,48,0.1)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#ffb830', borderWidth: 2 }]
+      },
+      options: { ...chartOpts(gc, tc, v => v.toFixed(0) + '%', 0, 100), plugins: { legend: { display: false } } }
+    });
+    animateBars();
+  }, 80);
+}
+
+/* ─── SESSIONS ───────────────────────────────────────────────────── */
+function renderSessions(d, h, el) {
+  const hasSessions = d.drainSessions.length > 0;
+  const maxDrain = hasSessions ? Math.max(...d.drainSessions.map(s => s.drain)) : 0;
+  const totalE = hasSessions ? d.drainSessions.reduce((a, b) => a + b.mwh, 0) : 0;
+  const avgRate = hasSessions ? (d.drainSessions.reduce((a, b) => a + b.rate, 0) / d.drainSessions.length).toFixed(0) : 0;
+
+  el.innerHTML = `
+    ${reportSelector()}
+    ${hasSessions ? `
+    <div class="fade-up d0">
+      <p class="section-title">Session Statistics</p>
+      <div class="metrics-grid">
+        ${metricCard('🔍','Sessions Tracked','mc-blue',d.drainSessions.length.toString(),'recent drain events',60,'var(--accent2)')}
+        ${metricCard('⚡','Total Energy Drained','mc-purple',(totalE/1000).toFixed(1)+'Wh','across all sessions',70,'var(--accent3)')}
+        ${metricCard('📉','Avg Drain Rate','mc-yellow',avgRate+' mWh/h','during active use',50,'var(--warn)')}
+        ${metricCard('🔥','Peak Drain Session','mc-red',maxDrain+'%','single session',maxDrain,'var(--danger)')}
+      </div>
+    </div>
+
+    <div class="fade-up d1">
+      <p class="section-title">Drain Sessions</p>
+      <div class="table-wrap" style="margin-bottom:1.5rem">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Duration</th>
+              <th>% Drained</th>
+              <th>Energy Used</th>
+              <th>Drain Rate</th>
+              <th>Load</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${d.drainSessions.map(s => {
+              const pct = (s.drain / maxDrain * 100).toFixed(0);
+              const loadLabel = s.drain > 40 ? 'Heavy' : s.drain > 25 ? 'Moderate' : s.drain > 10 ? 'Normal' : 'Light';
+              const loadClass = s.drain > 40 ? 'pill-bad' : s.drain > 25 ? 'pill-warn' : s.drain > 10 ? 'pill-info' : 'pill-good';
+              return `<tr>
+                <td class="mono">${s.date}</td>
+                <td>${s.dur || '-'}</td>
+                <td>
+                  <div class="drain-vis">
+                    <div class="drain-bar-bg"><div class="drain-bar-fill" style="width:${pct}%;background:${s.drain > 40 ? '#ff4f4f' : s.drain > 25 ? '#ffb830' : '#00ffa3'}"></div></div>
+                    <span class="mono" style="color:${s.drain > 40 ? 'var(--danger)' : s.drain > 25 ? 'var(--warn)' : 'var(--accent)'}">${s.drain}%</span>
+                  </div>
+                </td>
+                <td class="mono">${(s.mwh / 1000).toFixed(2)} Wh</td>
+                <td class="mono">${s.rate} mWh/h</td>
+                <td><span class="pill ${loadClass}" style="font-size:11px;padding:3px 10px">${loadLabel}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="fade-up d2">
+      <p class="section-title">Drain Visualization</p>
+      <div class="chart-card chart-full">
+        <div class="chart-header">
+          <div class="chart-title"><span class="icon">📊</span>Drain per session</div>
+          <div class="chart-meta">% capacity drained</div>
+        </div>
+        <div style="position:relative;height:260px"><canvas id="sessionChart" aria-label="Session drain chart">Session drain.</canvas></div>
+      </div>
+    </div>
+    ` : `
+    <div class="empty-state fade-up d0">
+      <div class="icon">🔍</div>
+      <h3>No drain session data</h3>
+      <p style="margin-top:8px;font-size:13px">The report doesn't contain recent battery drain sessions. This appears after your laptop has been active on battery power.</p>
+    </div>
+    `}
+  `;
+
+  if (!hasSessions) return;
+
+  setTimeout(() => {
+    const gdark = document.documentElement.dataset.theme === 'dark';
+    const gc = gdark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+    const tc = gdark ? '#556' : '#99a';
+    const labels = d.drainSessions.map(s => s.date.slice(6));
+    const vals = d.drainSessions.map(s => s.drain);
+
+    state.charts.sessions = new Chart(document.getElementById('sessionChart'), {
+      type: 'bar', data: { labels,
+        datasets: [{
+          data: vals,
+          backgroundColor: vals.map(v => v > 40 ? 'rgba(255,79,79,0.55)' : v > 25 ? 'rgba(255,184,48,0.55)' : 'rgba(0,255,163,0.5)'),
+          borderColor: vals.map(v => v > 40 ? '#ff4f4f' : v > 25 ? '#ffb830' : '#00ffa3'),
+          borderWidth: 1.5, borderRadius: 6
+        }]
+      },
+      options: { ...chartOpts(gc, tc, v => v + '%', 0, 70), plugins: { legend: { display: false } } }
+    });
+  }, 80);
+}
+
+/* ─── COMPARE ────────────────────────────────────────────────────── */
+function renderCompare(el) {
+  if (state.reports.length < 2) {
+    el.innerHTML = `
+      ${reportSelector()}
+      <div class="empty-state fade-up d0">
+        <div class="icon">⚖️</div>
+        <h3>Add more reports to compare</h3>
+        <p style="margin-top:8px;font-size:13px">Upload multiple battery reports to see a side-by-side comparison</p>
+        <button class="btn-primary" style="margin:1.5rem auto 0;display:flex" onclick="showAddReport()">+ Add Another Report</button>
+      </div>
+    `;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="fade-up d0">
+      <p class="section-title">Report Comparison</p>
+      <div class="compare-grid">
+        ${state.reports.map((d, i) => {
+          const h = computeHealth(d);
+          return `
+            <div class="compare-card">
+              <div class="compare-card-header">
+                <span class="compare-card-name">📋 ${d.filename.replace('.html', '').slice(0, 22)}</span>
+                <span class="pill ${h.score >= 70 ? 'pill-good' : h.score >= 50 ? 'pill-warn' : 'pill-bad'}" style="font-size:11px;padding:2px 10px">
+                  ${d.battery.designCapacity > 0 ? 'Score: ' + h.score : 'Incomplete'}
+                </span>
+              </div>
+              <div class="compare-card-body">
+                <div class="compare-row"><span class="compare-label">Device</span><span class="compare-val" style="font-size:11px;font-family:inherit">${d.device.split(' ').slice(0, 4).join(' ')}</span></div>
+                <div class="compare-row"><span class="compare-label">Design Capacity</span><span class="compare-val">${d.battery.designCapacity ? (d.battery.designCapacity/1000).toFixed(1) + ' Wh' : 'N/A'}</span></div>
+                <div class="compare-row"><span class="compare-label">Full Charge Cap</span><span class="compare-val" style="color:${h.color}">${d.battery.fullChargeCapacity ? (d.battery.fullChargeCapacity/1000).toFixed(1) + ' Wh' : 'N/A'}</span></div>
+                <div class="compare-row"><span class="compare-label">Wear Level</span><span class="compare-val" style="color:${h.wearPct > 15 ? 'var(--warn)' : 'var(--accent)'}">${d.battery.designCapacity > 0 ? h.wearPct + '%' : 'N/A'}</span></div>
+                <div class="compare-row"><span class="compare-label">Cycle Count</span><span class="compare-val">${d.battery.cycleCount || 'N/A'}</span></div>
+                <div class="compare-row"><span class="compare-label">Avg Battery Life</span><span class="compare-val">${h.avgLife ? h.avgLife + 'h' : 'N/A'}</span></div>
+                <div class="compare-row"><span class="compare-label">Status</span><span class="compare-val" style="color:${h.color}">${d.battery.designCapacity > 0 ? h.status : 'No data'}</span></div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="fade-up d1">
+      <p class="section-title">Score Comparison</p>
+      <div class="chart-card chart-full">
+        <div style="position:relative;height:260px"><canvas id="compareChart" aria-label="Score comparison chart">Score comparison.</canvas></div>
+      </div>
+    </div>
+
+    <div class="fade-up d2">
+      <p class="section-title">Capacity Comparison</p>
+      <div class="chart-card chart-full">
+        <div style="position:relative;height:300px"><canvas id="capCompareChart" aria-label="Capacity comparison chart">Capacity comparison.</canvas></div>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    const gdark = document.documentElement.dataset.theme === 'dark';
+    const gc = gdark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
+    const tc = gdark ? '#556' : '#99a';
+    const palette = ['rgba(0,255,163,0.6)', 'rgba(0,212,255,0.6)', 'rgba(124,109,255,0.6)', 'rgba(255,184,48,0.6)'];
+    const palBorder = ['#00ffa3', '#00d4ff', '#7c6dff', '#ffb830'];
+
+    const names = state.reports.map(r => r.filename.replace('.html', '').slice(0, 20));
+    const scores = state.reports.map(r => computeHealth(r).score);
+
+    state.charts.compare = new Chart(document.getElementById('compareChart'), {
+      type: 'bar',
+      data: { labels: names, datasets: [{ data: scores, backgroundColor: scores.map((_, i) => palette[i % 4]), borderColor: scores.map((_, i) => palBorder[i % 4]), borderWidth: 2, borderRadius: 8 }] },
+      options: { ...chartOpts(gc, tc, v => v + '/100', 0, 100), plugins: { legend: { display: false } } }
+    });
+
+    const capLabels = [...new Set(state.reports.flatMap(r => r.capacityHistory.slice(-10).map(c => c.period)))].slice(-10);
+    if (capLabels.length > 0) {
+      const capDatasets = state.reports.map((r, i) => {
+        const m = {};
+        r.capacityHistory.forEach(c => { m[c.period] = c.fcc; });
+        return {
+          label: r.filename.replace('.html', '').slice(0, 20),
+          data: capLabels.map(l => m[l] || null),
+          borderColor: palBorder[i % 4], backgroundColor: 'transparent',
+          fill: false, tension: 0.3, pointRadius: 3, borderWidth: 2, spanGaps: true
+        };
+      });
+
+      state.charts.capCompare = new Chart(document.getElementById('capCompareChart'), {
+        type: 'line', data: { labels: capLabels, datasets: capDatasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: true, labels: { color: tc, font: { size: 11 } } } },
+          scales: { x: { ticks: { color: tc, font: { size: 10 } }, grid: { color: gc } }, y: { ticks: { color: tc, font: { size: 10 }, callback: v => (v / 1000).toFixed(0) + 'k' }, grid: { color: gc } } }
+        }
+      });
+    }
+  }, 80);
+}
+
+/* ─── TIPS ───────────────────────────────────────────────────────── */
+function renderTips(d, h, el) {
+  const tips = [
+    { icon:'🔋', title:'Keep charge between 20–80%', text:'Lithium-ion batteries degrade faster when repeatedly charged to 100% or drained to 0%. Many laptops let you set a charge limit in BIOS.', tip:'Use HP Command Center or Windows Battery Limit settings' },
+    { icon:'❄️', title:'Keep it cool', text:'Heat is the #1 enemy of lithium-ion batteries. Avoid soft surfaces that block vents and direct sunlight.', tip:'Ideal operating temp: 16–35°C (60–95°F)' },
+    { icon:'🌙', title:'Enable Battery Saver below 30%', text:'Windows Battery Saver reduces background activity and screen brightness, extending runtime.', tip:'Settings → System → Battery → Battery Saver' },
+    { icon:'💤', title:'Optimize standby drain', text:'Your battery loses energy even in sleep. Use Hibernate for long breaks or shut down overnight.', tip:'powercfg /hibernate on' },
+    { icon:'🔌', title:'Unplug when fully charged', text:'Keeping your laptop plugged in at 100% causes "trickle charging" stress. Use battery health modes.', tip:'Set charge limit to 80% in BIOS or HP Command Center' },
+    { icon:'📊', title:'Monitor monthly', text:'Re-run powercfg /batteryreport monthly to track degradation. Early detection saves you from dead batteries mid-work.', tip:`Monthly loss: ~${d.battery.designCapacity ? Math.round((d.battery.designCapacity-d.battery.fullChargeCapacity)/8).toLocaleString() : '?'} mWh` },
+    { icon:'⚡', title:'Avoid rapid charging when possible', text:'Fast-charging generates more heat. Use standard charging for overnight top-ups.', tip:'Reserve fast charging for when you need it' },
+    { icon:'🔄', title:'Full calibration every 3 months', text:'Run battery from 100% to below 5% to help the meter recalibrate. Don\'t do this too often.', tip:'Once per quarter, not regularly' }
+  ];
+
+  const urgentTips = [];
+  if (d.battery.designCapacity > 0 && h.wearPct > 20) urgentTips.push({ icon:'⚠️', text:`Your battery has lost ${h.wearPct}% capacity. Consider contacting your laptop manufacturer.`, cls:'pill-bad' });
+  if (d.battery.cycleCount > 350) urgentTips.push({ icon:'⚠️', text:`${d.battery.cycleCount} cycles approaches the rated lifespan. Plan for replacement.`, cls:'pill-warn' });
+  if (h.avgLife > 0 && h.avgLife < 4) urgentTips.push({ icon:'💡', text:`Your average ${h.avgLife}h battery life is quite low. Check Task Manager for background apps.`, cls:'pill-warn' });
+
+  el.innerHTML = `
+    ${reportSelector()}
+    ${urgentTips.length ? `
+      <div class="fade-up d0">
+        <p class="section-title">Priority Actions</p>
+        <div class="diagnosis-list" style="margin-bottom:1.5rem">
+          ${urgentTips.map(t => `
+            <div class="diagnosis-item">
+              <div class="d-icon d-${t.cls.includes('bad') ? 'bad' : 'warn'}">${t.icon}</div>
+              <div class="d-desc">${t.text}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : ''}
+    <div class="fade-up d1">
+      <p class="section-title">Battery Care Tips</p>
+      <div class="tips-grid">
+        ${tips.map(t => `
+          <div class="tip-card">
+            <span class="tip-icon">${t.icon}</span>
+            <div class="tip-title">${t.title}</div>
+            <div class="tip-text">${t.text}</div>
+            <div class="tip-highlight">💡 ${t.tip}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════════════════ */
+function metricCard(icon, label, cls, value, sub, pct, fillColor) {
+  return `
+    <div class="metric-card ${cls}">
+      <span class="metric-icon">${icon}</span>
+      <div class="metric-label">${label}</div>
+      <div class="metric-value">${value}</div>
+      <div class="metric-sub">${sub}</div>
+      <div class="metric-bar"><div class="metric-bar-fill" data-width="${Math.min(pct, 100)}" style="width:0%;background:${fillColor}"></div></div>
+    </div>
+  `;
+}
+
+function reportSelector() {
+  if (state.reports.length <= 1) return '';
+  return `
+    <div style="margin-bottom:1.5rem">
+      <div class="report-pills">
+        ${state.reports.map((r, i) => `
+          <div class="report-pill${i === state.activeReport ? ' active' : ''}" onclick="switchReport(${i})" title="Click to rename" ondblclick="renameReport(${i})">
+            📋 ${r.filename.replace('.html', '').slice(0, 25)}
+            <span class="remove" onclick="event.stopPropagation();confirmRemoveReport(${i})">✕</span>
+          </div>
+        `).join('')}
+        <button class="add-report-btn" onclick="showAddReport()">+ Add Report</button>
+      </div>
+    </div>
+  `;
+}
+
+function chartOpts(gridColor, textColor, tickCb, yMin, yMax) {
+  const opts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: textColor, font: { size: 10 }, maxRotation: 45, autoSkip: true }, grid: { color: gridColor } },
+      y: { ticks: { color: textColor, font: { size: 10 }, callback: tickCb }, grid: { color: gridColor } }
+    }
+  };
+  if (yMin !== undefined) opts.scales.y.min = yMin;
+  if (yMax !== undefined) opts.scales.y.max = yMax;
+  return opts;
+}
+
+function animateArc(id, pct, circ) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const offset = circ - pct * circ;
+  setTimeout(() => { el.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)'; el.style.strokeDashoffset = offset.toFixed(1); }, 50);
+}
+
+function animateBars() {
+  document.querySelectorAll('[data-width]').forEach(el => {
+    setTimeout(() => { el.style.width = el.dataset.width + '%'; }, 100);
+  });
+}
+
+function destroyCharts() {
+  Object.values(state.charts).forEach(c => { try { c.destroy(); } catch (e) { } });
+  state.charts = {};
+}
+
+function formatDate(s) {
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  const icons = { info: 'ℹ️', success: '✅', error: '❌', warn: '⚠️' };
+  t.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${msg}`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function showLoading(on) {
+  document.getElementById('loadingOverlay').classList.toggle('hidden', !on);
+}
+
+function updateCounterDisplay() {
+  const el = document.getElementById('s1');
+  if (el) el.textContent = state.totalAnalyzed;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RENAME REPORT
+═══════════════════════════════════════════════════════════════════ */
+function renameReport(index) {
+  const r = state.reports[index];
+  if (!r) return;
+  const currentName = r.filename.replace('.html', '');
+  showModal('Rename Report', `
+    <input class="rename-input" id="renameInput" value="${escapeHtml(currentName)}" placeholder="Report name" autofocus/>
+  `, [
+    { label: 'Cancel', class: 'btn-secondary', action: hideModal },
+    { label: 'Save', class: 'btn-primary', action: () => {
+      const val = document.getElementById('renameInput').value.trim();
+      if (val) {
+        state.reports[index].filename = val + '.html';
+        saveReports();
+        renderTab(state.activeTab);
+        showToast('Report renamed', 'success');
+      }
+      hideModal();
+    }}
+  ]);
+  setTimeout(() => { const inp = document.getElementById('renameInput'); if (inp) inp.focus(); }, 100);
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════════════════════ */
+function showModal(title, body, buttons) {
+  const overlay = document.getElementById('modalOverlay');
+  const box = document.getElementById('modalBox');
+  box.innerHTML = `
+    <div class="modal-title">${title}</div>
+    ${body}
+    <div class="modal-actions">
+      ${buttons.map(b => `<button class="${b.class}" onclick="(${b.action.toString()})()">${b.label}</button>`).join('')}
+    </div>
+  `;
+  overlay.classList.remove('hidden');
+}
+
+function hideModal() {
+  document.getElementById('modalOverlay').classList.add('hidden');
+}
+
+function confirmRemoveReport(index) {
+  const r = state.reports[index];
+  const name = r ? r.filename.replace('.html', '') : 'this report';
+  showModal('Remove Report', `
+    <div class="modal-text">Are you sure you want to remove <strong>${escapeHtml(name)}</strong>? This cannot be undone.</div>
+  `, [
+    { label: 'Cancel', class: 'btn-secondary', action: hideModal },
+    { label: 'Remove', class: 'btn-primary', style: 'background:var(--danger);color:#fff', action: () => {
+      if (state.reports.length <= 1) { showToast('Cannot remove the last report', 'warn'); hideModal(); return; }
+      state.reports.splice(index, 1);
+      state.activeReport = Math.min(state.activeReport, state.reports.length - 1);
+      document.getElementById('compareCount').textContent = state.reports.length;
+      document.getElementById('reportCount').textContent = state.reports.length + (state.reports.length === 1 ? ' report' : ' reports');
+      saveReports();
+      renderTab(state.activeTab);
+      hideModal();
+      showToast('Report removed', 'info');
+    }}
+  ]);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INTERACTIONS
+═══════════════════════════════════════════════════════════════════ */
+function switchTab(tab, btn) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTab(tab);
+}
+
+function switchReport(i) {
+  state.activeReport = i;
+  renderTab(state.activeTab);
+}
+
+function showAddReport() {
+  document.getElementById('addFileInput').click();
+}
+
+function showLanding() {
+  destroyCharts();
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('landingPage').classList.remove('hidden');
+  document.getElementById('reportCount').style.display = 'none';
+}
+
+function loadDemo() {
+  state.reports = [JSON.parse(JSON.stringify(DEMO))];
+  state.activeReport = 0;
+  state.activeTab = 'overview';
+  bumpCounter();
+  saveReports();
+  renderDashboard();
+  document.querySelectorAll('.tab-btn').forEach((b, i) => { b.classList.toggle('active', i === 0); });
+  showToast('Demo report loaded!', 'success');
+}
+
+function bumpCounter() {
+  state.totalAnalyzed++;
+  localStorage.setItem(COUNT_KEY, state.totalAnalyzed);
+  updateCounterDisplay();
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.dataset.theme === 'dark';
+  html.dataset.theme = isDark ? 'light' : 'dark';
+  document.querySelector('.theme-btn').textContent = isDark ? '🌙' : '☀️';
+  if (state.activeTab) renderTab(state.activeTab);
+}
+
+function copyCmd() {
+  const text = 'powercfg /batteryreport /output "%USERPROFILE%\\battery-report.html"';
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Command copied to clipboard!', 'success');
+  }).catch(() => {
+    showToast('Copy failed — please copy manually', 'error');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FILE HANDLING
+═══════════════════════════════════════════════════════════════════ */
+function handleFiles(files, replace) {
+  const toRead = Array.from(files);
+  let loaded = 0;
+  const newReports = [];
+  let hadError = false;
+
+  showLoading(true);
+  toRead.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = parseReport(ev.target.result, file.name);
+        if (!data.battery.designCapacity && !data.capacityHistory.length) {
+          throw new Error('Could not parse battery data from this file');
+        }
+        newReports.push(data);
+      } catch (e) {
+        hadError = true;
+        showToast('Error parsing: ' + file.name + ' — ' + e.message, 'error');
+      }
+      loaded++;
+      if (loaded === toRead.length) {
+        if (newReports.length === 0) {
+          showLoading(false);
+          showToast('No valid reports found in the selected files', 'error');
+          return;
+        }
+        if (replace) state.reports = [];
+        newReports.forEach(r => state.reports.push(r));
+        if (state.reports.length === newReports.length || replace) state.activeReport = 0;
+        state.activeTab = 'overview';
+        bumpCounter();
+        saveReports();
+        document.getElementById('compareCount').textContent = state.reports.length;
+        renderDashboard();
+        document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+        showLoading(false);
+        const msg = `${newReports.length} report${newReports.length > 1 ? 's' : ''} loaded${hadError ? ' (with errors)' : ''}`;
+        showToast(msg, hadError ? 'warn' : 'success');
+      }
+    };
+    reader.onerror = () => {
+      hadError = true;
+      loaded++;
+      showToast('Failed to read: ' + file.name, 'error');
+      if (loaded === toRead.length) showLoading(false);
+    };
+    reader.readAsText(file);
+  });
+}
+
+/* ── Event Bindings ────────────────────────────────────────────────── */
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files.length) handleFiles(e.target.files, true);
+});
+
+document.getElementById('addFileInput').addEventListener('change', e => {
+  if (e.target.files.length) handleFiles(e.target.files, false);
+});
+
+document.getElementById('importFileInput').addEventListener('change', e => {
+  if (e.target.files.length) importJSON(e.target.files[0]);
+  e.target.value = '';
+});
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) hideModal();
+});
+
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag');
+  if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files, true);
+});
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hideModal();
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════════ */
+updateCounterDisplay();
+document.querySelector('.theme-btn').textContent = '☀️';
+
+const hasSaved = loadReports();
+if (hasSaved) {
+  updateCounterDisplay();
+  state.activeReport = 0;
+  state.activeTab = 'overview';
+  renderDashboard();
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  showToast(`Loaded ${state.reports.length} saved report(s)`, 'info');
+}
+
+})();
+</script>
+</body>
+</html>

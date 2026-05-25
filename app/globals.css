@@ -1,0 +1,234 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-syne: 'Syne', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-bg0: #080c12;
+  --color-bg1: #0d1117;
+  --color-bg2: #131920;
+  --color-bg3: #1a2230;
+  --color-border: #1e2d3d;
+  --color-border2: #2a3f56;
+  --color-text1: #e8f0fe;
+  --color-text2: #8899aa;
+  --color-text3: #536070;
+  --color-accent: #00ffa3;
+  --color-accent2: #00d4ff;
+  --color-accent3: #7c6dff;
+  --color-warn: #ffb830;
+  --color-danger: #ff4f4f;
+  --color-good: #00ffa3;
+}
+
+/* ── Light Mode Overrides ────────────────────────────── */
+.light {
+  --color-bg0: #f0f4fa;
+  --color-bg1: #f7f9fd;
+  --color-bg2: #ffffff;
+  --color-bg3: #eef2f9;
+  --color-border: #dce3ee;
+  --color-border2: #c5d0e0;
+  --color-text1: #0d1117;
+  --color-text2: #4a5568;
+  --color-text3: #8899aa;
+  --color-accent: #008f5d;
+  --color-accent2: #0070b8;
+  --color-accent3: #5b4fcf;
+  --color-warn: #b87800;
+  --color-danger: #c0392b;
+  --color-good: #008f5d;
+}
+
+/* ── Base Styles ──────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+.light {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg0);
+  color: var(--color-text1);
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Glassmorphism Utility ────────────────────────────── */
+.glass {
+  background: rgba(13, 17, 23, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-border);
+}
+
+.light .glass {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Card Glow Effect ─────────────────────────────────── */
+.card-glow {
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 163, 0.08),
+    0 4px 32px rgba(0, 0, 0, 0.6);
+}
+
+.light .card-glow {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Score Ring Gradient ──────────────────────────────── */
+.score-gradient-green { stroke: var(--color-accent); }
+.score-gradient-yellow { stroke: var(--color-warn); }
+.score-gradient-orange { stroke: #ff9500; }
+.score-gradient-red { stroke: var(--color-danger); }
+
+/* ── Accent Bars for Metric Cards ─────────────────────── */
+.bar-green::after { background: linear-gradient(90deg, var(--color-accent), var(--color-accent2)); }
+.bar-yellow::after { background: linear-gradient(90deg, var(--color-warn), #ff9500); }
+.bar-red::after { background: linear-gradient(90deg, var(--color-danger), #ff7c7c); }
+.bar-blue::after { background: linear-gradient(90deg, var(--color-accent2), var(--color-accent3)); }
+.bar-purple::after { background: linear-gradient(90deg, var(--color-accent3), #a855f7); }
+
+.bar-green::after,
+.bar-yellow::after,
+.bar-red::after,
+.bar-blue::after,
+.bar-purple::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+
+/* ── Pill Badges ──────────────────────────────────────── */
+.pill-good { background: rgba(0, 255, 163, 0.1); color: var(--color-accent); border: 1px solid rgba(0, 255, 163, 0.2); }
+.pill-warn { background: rgba(255, 184, 48, 0.1); color: var(--color-warn); border: 1px solid rgba(255, 184, 48, 0.2); }
+.pill-bad { background: rgba(255, 79, 79, 0.1); color: var(--color-danger); border: 1px solid rgba(255, 79, 79, 0.2); }
+.pill-info { background: rgba(0, 212, 255, 0.1); color: var(--color-accent2); border: 1px solid rgba(0, 212, 255, 0.2); }
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 163, 0.4); }
+  50% { box-shadow: 0 0 16px 4px rgba(0, 255, 163, 0.15); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-blink { animation: blink 2s infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.05) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg0); }
+::-webkit-scrollbar-thumb { background: var(--color-border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text3); }
+
+/* ── Selection ────────────────────────────────────────── */
+::selection {
+  background: rgba(0, 255, 163, 0.2);
+  color: var(--color-text1);
+}
+
+/* ── Recharts Overrides ───────────────────────────────── */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--color-border);
+  stroke-opacity: 0.5;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+
+/* ── Print / Export ───────────────────────────────────── */
+@media print {
+  [data-no-export] { display: none !important; }
+  body { background: #fff; color: #000; }
+  .glass { background: #fff; backdrop-filter: none; }
+}
+
+/* ── Utility ──────────────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(circle, var(--color-border) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ── Upload Zone Drag State ───────────────────────────── */
+.upload-drag-active {
+  border-color: var(--color-accent) !important;
+  background: rgba(0, 255, 163, 0.03) !important;
+}
+
+.upload-drag-active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0, 255, 163, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Mobile Responsive ────────────────────────────────── */
+@media (max-width: 640px) {
+  .hide-mobile { display: none !important; }
+}
+
+/* ── Ad Container ─────────────────────────────────────── */
+.ad-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-bg2);
+  border: 1px solid var(--color-border);
+}
+
+.ad-container ins {
+  display: block;
+  width: 100%;
+}
