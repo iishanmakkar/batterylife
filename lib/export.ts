@@ -5,6 +5,139 @@
 
 import type { BatteryReport, HealthAnalysis } from './types';
 
+function safeFilename(filename: string): string {
+  return filename.replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').replace(/\s+/g, ' ').trim();
+}
+
+function addWrappedText(
+  pdf: import('jspdf').jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number
+): number {
+  const lines = pdf.splitTextToSize(text, maxWidth);
+  pdf.text(lines, x, y);
+  return y + lines.length * lineHeight;
+}
+
+/** Export a structured report PDF without screenshotting the live app DOM. */
+export async function exportReportPDF(
+  report: BatteryReport,
+  health: HealthAnalysis,
+  filename: string
+): Promise<void> {
+  const { jsPDF } = await import('jspdf');
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 42;
+  const contentWidth = pageWidth - margin * 2;
+  let y = 48;
+
+  const ensureSpace = (needed = 80) => {
+    if (y + needed <= pageHeight - margin) return;
+    pdf.addPage();
+    y = margin;
+  };
+
+  const section = (title: string) => {
+    ensureSpace(56);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.setTextColor(12, 17, 23);
+    pdf.text(title, margin, y);
+    y += 18;
+    pdf.setDrawColor(210, 220, 230);
+    pdf.line(margin, y, pageWidth - margin, y);
+    y += 18;
+  };
+
+  const row = (label: string, value: string) => {
+    ensureSpace(22);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.setTextColor(90, 105, 125);
+    pdf.text(label, margin, y);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(20, 28, 38);
+    pdf.text(value || 'N/A', margin + 170, y);
+    y += 18;
+  };
+
+  pdf.setFillColor(8, 12, 18);
+  pdf.rect(0, 0, pageWidth, 112, 'F');
+  pdf.setTextColor(0, 255, 163);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(24);
+  pdf.text('BatteryIQ', margin, 48);
+  pdf.setTextColor(232, 240, 254);
+  pdf.setFontSize(13);
+  pdf.text('Professional Laptop Battery Health Report', margin, 72);
+  pdf.setTextColor(150, 165, 185);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.text(`Generated from ${report.filename}`, margin, 92);
+  y = 146;
+
+  section('Health Summary');
+  row('Health Score', health.status === 'Unknown' ? 'N/A' : `${health.score}/100 (${health.status})`);
+  row('Grade', health.grade);
+  row('Health', report.battery.designCapacity > 0 ? `${health.healthPct}%` : 'N/A');
+  row('Wear', report.battery.designCapacity > 0 ? `${health.wearPct}%` : 'N/A');
+  row('Estimated Lifespan', health.estimatedLifespan);
+  row('Average Battery Life', health.avgLife > 0 ? `${health.avgLife} hours` : 'N/A');
+
+  section('Battery Details');
+  row('Device', report.device.name);
+  row('Battery Model', report.battery.name);
+  row('Manufacturer', report.battery.manufacturer);
+  row('Serial', report.battery.serial);
+  row('Chemistry', report.battery.chemistry);
+  row('Design Capacity', report.battery.designCapacity > 0 ? `${report.battery.designCapacity.toLocaleString()} mWh` : 'N/A');
+  row('Full Charge Capacity', report.battery.fullChargeCapacity > 0 ? `${report.battery.fullChargeCapacity.toLocaleString()} mWh` : 'N/A');
+  row('Cycle Count', report.battery.cycleCountKnown ? `${report.battery.cycleCount}` : 'N/A');
+  row('Report Time', report.reportTime);
+  row('BIOS', report.device.bios);
+  row('OS Build', report.device.os);
+
+  section('Usage Summary');
+  const batteryHours = report.weeklyUsage.reduce((sum, item) => sum + item.bat, 0);
+  const acHours = report.weeklyUsage.reduce((sum, item) => sum + item.ac, 0);
+  const drainAvg = report.drainSessions.length
+    ? Math.round(report.drainSessions.reduce((sum, item) => sum + item.rate, 0) / report.drainSessions.length)
+    : 0;
+  row('Battery Usage', `${batteryHours.toFixed(1)} hours`);
+  row('AC Usage', `${acHours.toFixed(1)} hours`);
+  row('Drain Sessions', `${report.drainSessions.length}`);
+  row('Average Draw', drainAvg ? `${(drainAvg / 1000).toFixed(1)} W` : 'N/A');
+  row('Capacity History Points', `${report.capacityHistory.length}`);
+
+  if (report.capacityHistory.length > 0) {
+    section('Recent Capacity History');
+    report.capacityHistory.slice(-10).forEach(item => row(item.period, `${item.fcc.toLocaleString()} mWh`));
+  }
+
+  section('Recommendations');
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.setTextColor(20, 28, 38);
+  y = addWrappedText(
+    pdf,
+    'Keep the battery between 20-80% when possible, avoid excessive heat, use battery saver for light work, and generate a fresh Windows battery report monthly to track degradation.',
+    margin,
+    y,
+    contentWidth,
+    14
+  );
+
+  pdf.setFontSize(8);
+  pdf.setTextColor(120, 135, 155);
+  pdf.text('BatteryIQ report generated locally in your browser.', margin, pageHeight - 24);
+  pdf.save(safeFilename(filename));
+}
+
 /** Export dashboard as PDF using html2canvas + jsPDF */
 export async function exportPDF(elementId: string, filename: string): Promise<void> {
   const element = document.getElementById(elementId);

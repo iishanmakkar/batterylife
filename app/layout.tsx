@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Syne, JetBrains_Mono, Inter } from 'next/font/google';
-import Script from 'next/script';
+import ThirdPartyScripts from '@/components/ThirdPartyScripts';
 import './globals.css';
 
 const syne = Syne({
@@ -65,21 +65,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#080c12" />
         <meta name="google-adsense-account" content="ca-pub-6088632479455301" />
         <meta name="monetag" content="58fc10d2e262143b783c9aecaaa355d0" />
-        <Script
-          async
-          src="https://quge5.com/88/tag.min.js"
-          data-zone="243065"
-          data-cfasync="false"
-          strategy="beforeInteractive"
-        />
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6088632479455301"
-          crossOrigin="anonymous"
-          strategy="beforeInteractive"
-        />
       </head>
       <body className="font-sans antialiased">
+        <ThirdPartyScripts />
         {children}
       </body>
     </html>

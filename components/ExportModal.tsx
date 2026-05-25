@@ -3,14 +3,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Download, FileJson, Image, X, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { BatteryReport, HealthAnalysis } from '@/lib/types';
-import { exportPDF, downloadJSON, generateShareCard } from '@/lib/export';
+import { exportReportPDF, downloadJSON, generateShareCard } from '@/lib/export';
 
 interface Props { isOpen: boolean; onClose: () => void; report: BatteryReport; health: HealthAnalysis; reports: BatteryReport[]; }
 
 export default function ExportModal({ isOpen, onClose, report, health, reports }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handlePDF = async () => { setLoading('pdf'); await exportPDF('dashboard-root', `BatteryIQ-${report.device.name}.pdf`); setLoading(null); };
+  const handlePDF = async () => {
+    setLoading('pdf');
+    try {
+      await exportReportPDF(report, health, `BatteryIQ-${report.device.name}.pdf`);
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      alert('PDF export failed. Please try again.');
+    } finally {
+      setLoading(null);
+    }
+  };
   const handleJSON = () => { downloadJSON(reports.length > 1 ? reports : report, `BatteryIQ-${report.device.name}.json`); };
   const handleImage = async () => {
     setLoading('image');
