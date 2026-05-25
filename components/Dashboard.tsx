@@ -85,36 +85,38 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
       id="dashboard-root"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="max-w-5xl mx-auto px-6 pb-16"
+      style={{ maxWidth: 1024, margin: '0 auto', padding: '0 24px 64px', width: '100%' }}
     >
-      <input ref={fileRef} type="file" accept=".html,.htm" multiple className="hidden" onChange={handleAddFile} />
+      <input ref={fileRef} type="file" accept=".html,.htm" multiple style={{ display: 'none' }} onChange={handleAddFile} />
 
       {/* ── Tab Navigation ─────────────────────────────────────── */}
-      <div className="sticky top-[64px] z-40 bg-[var(--color-bg0)]/90 backdrop-blur-lg border-b border-[var(--color-border)] mb-6 -mx-6 px-6">
-        <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-none">
+      <div style={{ position: 'sticky', top: 64, zIndex: 40, background: 'rgba(8,12,18,0.9)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid var(--bdr)', marginBottom: 24, marginLeft: -24, marginRight: -24, padding: '0 24px' }}>
+        <div className="scrollbar-none" style={{ display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', padding: '8px 0' }}>
           {tabs.map(t => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id)}
-              className={`flex items-center gap-1.5 py-2.5 px-3.5 text-xs font-medium whitespace-nowrap rounded-lg transition-all cursor-pointer ${
-                activeTab === t.id
-                  ? 'text-[var(--color-accent)] bg-[rgba(0,255,163,0.08)]'
-                  : 'text-[var(--color-text3)] hover:text-[var(--color-text2)] hover:bg-[var(--color-bg2)]'
-              }`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, padding: '10px 14px',
+                fontSize: 12, fontWeight: 500, whiteSpace: 'nowrap', borderRadius: 8,
+                cursor: 'pointer', border: 'none', transition: 'all 0.2s',
+                color: activeTab === t.id ? 'var(--acc)' : 'var(--tx3)',
+                background: activeTab === t.id ? 'rgba(0,255,163,0.08)' : 'transparent',
+              }}
             >
               {t.icon} {t.label}
             </button>
           ))}
-          <div className="flex-1" />
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => fileRef.current?.click()} className="flex items-center gap-1 py-1.5 px-3 rounded-lg text-[11px] font-medium text-[var(--color-text3)] hover:text-[var(--color-accent)] hover:bg-[var(--color-bg2)] transition-all cursor-pointer">
-              <Plus className="w-3.5 h-3.5" /> Add
+          <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button onClick={() => fileRef.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 500, color: 'var(--tx3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <Plus style={{ width: 14, height: 14 }} /> Add
             </button>
-            <button onClick={() => setShowExport(true)} className="flex items-center gap-1 py-1.5 px-3 rounded-lg text-[11px] font-medium text-[var(--color-text3)] hover:text-[var(--color-accent)] hover:bg-[var(--color-bg2)] transition-all cursor-pointer">
-              <Download className="w-3.5 h-3.5" /> Export
+            <button onClick={() => setShowExport(true)} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 500, color: 'var(--tx3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <Download style={{ width: 14, height: 14 }} /> Export
             </button>
-            <button onClick={onClose} className="flex items-center gap-1 py-1.5 px-3 rounded-lg text-[11px] font-medium text-[var(--color-text3)] hover:text-[var(--color-danger)] hover:bg-[var(--color-bg2)] transition-all cursor-pointer">
-              <X className="w-3.5 h-3.5" /> Close
+            <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 500, color: 'var(--tx3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <X style={{ width: 14, height: 14 }} /> Close
             </button>
           </div>
         </div>
@@ -157,12 +159,12 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
       {/* OVERVIEW TAB */}
       {activeTab === 'overview' && (
-        <div className="space-y-5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <ScoreCard report={report} health={health} />
           <AdUnit slot="1234567890" format="horizontal" className="my-5" />
 
           {/* Metrics Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
             <MetricCard icon={<Battery className="w-5 h-5 text-[var(--color-accent)]" />} label="Health" value={`${health.healthPct}%`} sub={`${report.battery.fullChargeCapacity.toLocaleString()} mWh`} pct={health.healthPct} colorClass="" barColor="linear-gradient(90deg, #00ffa3, #00d4ff)" />
             <MetricCard icon={<Gauge className="w-5 h-5 text-[var(--color-warn)]" />} label="Wear" value={`${health.wearPct}%`} sub={`${(report.battery.designCapacity - report.battery.fullChargeCapacity).toLocaleString()} mWh lost`} pct={health.wearPct} colorClass="" barColor="linear-gradient(90deg, #ffb830, #ff9500)" />
             <MetricCard icon={<RefreshCw className="w-5 h-5 text-[var(--color-accent2)]" />} label="Cycles" value={`${report.battery.cycleCount}`} sub={`${health.remainingCycles} remaining`} pct={(report.battery.cycleCount / 500) * 100} colorClass="" barColor="linear-gradient(90deg, #00d4ff, #7c6dff)" />
@@ -172,7 +174,7 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
           </div>
 
           {/* Mini Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>
             {report.capacityHistory.length > 0 && <CapacityChart data={report.capacityHistory} designCapacity={report.battery.designCapacity} height={200} />}
             {report.lifeEstimates.length > 0 && <BatteryLifeChart data={report.lifeEstimates} height={200} />}
           </div>
@@ -181,10 +183,10 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
           {/* Insights */}
           {insights.length > 0 && (
-            <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-              <div className="py-3 px-5 border-b border-[var(--color-border)]">
-                <h3 className="text-sm font-semibold text-[var(--color-text1)] flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-[var(--color-accent)]" /> AI-Powered Insights
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, overflow: 'hidden' }}>
+              <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--bdr)' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Zap style={{ width: 16, height: 16, color: 'var(--acc)' }} /> AI-Powered Insights
                 </h3>
               </div>
               {insights.slice(0, 4).map((ins, i) => <InsightCard key={i} insight={ins} />)}
@@ -193,9 +195,9 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
           {/* Verdicts */}
           {verdicts.length > 0 && (
-            <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-[var(--color-text1)] mb-3 flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[var(--color-warn)]" /> Diagnostics
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 20 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Activity style={{ width: 16, height: 16, color: 'var(--wrn)' }} /> Diagnostics
               </h3>
               <div className="space-y-2">
                 {verdicts.map((v, i) => (
@@ -212,27 +214,27 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
           )}
 
           {/* Extra Metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)] mb-1">
-                <DollarSign className="w-4 h-4 text-[var(--color-accent)]" /> Resale Impact
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 4 }}>
+                <DollarSign style={{ width: 16, height: 16, color: 'var(--acc)' }} /> Resale Impact
               </div>
-              <div className="font-mono text-lg text-[var(--color-text1)] font-bold">{resale.label}</div>
-              <p className="text-xs text-[var(--color-text2)] mt-1">{resale.description}</p>
+              <div className="font-mono" style={{ fontSize: 18, color: 'var(--tx1)', fontWeight: 700 }}>{resale.label}</div>
+              <p style={{ fontSize: 12, color: 'var(--tx2)', marginTop: 4 }}>{resale.description}</p>
             </div>
-            <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)] mb-1">
-                <Flame className="w-4 h-4 text-[var(--color-danger)]" /> Gaming Damage
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 4 }}>
+                <Flame style={{ width: 16, height: 16, color: 'var(--dng)' }} /> Gaming Damage
               </div>
-              <div className="font-mono text-lg text-[var(--color-text1)] font-bold">{gaming.level}</div>
-              <p className="text-xs text-[var(--color-text2)] mt-1">{gaming.description.slice(0, 120)}</p>
+              <div className="font-mono" style={{ fontSize: 18, color: 'var(--tx1)', fontWeight: 700 }}>{gaming.level}</div>
+              <p style={{ fontSize: 12, color: 'var(--tx2)', marginTop: 4 }}>{gaming.description.slice(0, 120)}</p>
             </div>
-            <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)] mb-1">
-                <CalendarDays className="w-4 h-4 text-[var(--color-accent2)]" /> Estimated Lifespan
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 4 }}>
+                <CalendarDays style={{ width: 16, height: 16, color: 'var(--acc2)' }} /> Estimated Lifespan
               </div>
-              <div className="font-mono text-lg text-[var(--color-text1)] font-bold">{health.estimatedLifespan}</div>
-              <p className="text-xs text-[var(--color-text2)] mt-1">Based on current degradation rate</p>
+              <div className="font-mono" style={{ fontSize: 18, color: 'var(--tx1)', fontWeight: 700 }}>{health.estimatedLifespan}</div>
+              <p style={{ fontSize: 12, color: 'var(--tx2)', marginTop: 4 }}>Based on current degradation rate</p>
             </div>
           </div>
           <AdUnit slot="2345678901" format="auto" className="my-5" />
