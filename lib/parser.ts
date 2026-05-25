@@ -21,6 +21,26 @@ function cleanCellText(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+function normalizeLabel(text: string): string {
+  return cleanCellText(text)
+    .toLowerCase()
+    .replace(/[:*]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function parseInteger(text: string): number | null {
+  const normalized = cleanCellText(text);
+  if (/^(?:-|--|n\/a|not available|unknown)$/i.test(normalized)) return null;
+  const match = normalized.match(/\d[\d,]*/);
+  return match ? parseInt(match[0].replace(/,/g, ''), 10) : null;
+}
+
+function parseCycleCount(text: string): number | null {
+  const value = parseInteger(text);
+  return value !== null && value >= 0 && value < 10000 ? value : null;
+}
+
 function tableContext(table: HTMLTableElement): string {
   const parts: string[] = [];
   if (table.caption?.textContent) parts.push(table.caption.textContent);
@@ -39,7 +59,7 @@ function tableContext(table: HTMLTableElement): string {
 }
 
 function findTableValue(doc: Document, labelText: string, contextText?: string): string | null {
-  const wantedLabel = cleanCellText(labelText).toLowerCase();
+  const wantedLabel = normalizeLabel(labelText);
   const wantedContext = contextText?.toLowerCase();
 
   for (const table of Array.from(doc.querySelectorAll('table'))) {
@@ -50,7 +70,7 @@ function findTableValue(doc: Document, labelText: string, contextText?: string):
       const cells = Array.from(row.querySelectorAll('td, th'));
       if (cells.length < 2) continue;
 
-      const label = cleanCellText(cells[0].textContent ?? '').toLowerCase();
+      const label = normalizeLabel(cells[0].textContent ?? '');
       if (label === wantedLabel) {
         return cleanCellText(cells[1].textContent ?? '') || null;
       }
@@ -96,6 +116,7 @@ function parseHTMLTables(doc: Document): {
   designCapacityFromTable: number;
   fullChargeFromTable: number;
   cycleCountFromTable: number;
+  cycleCountKnownFromTable: boolean;
   batteryNameFromTable: string;
   manufacturerFromTable: string;
   serialFromTable: string;
@@ -110,6 +131,7 @@ function parseHTMLTables(doc: Document): {
     designCapacityFromTable: 0,
     fullChargeFromTable: 0,
     cycleCountFromTable: 0,
+    cycleCountKnownFromTable: false,
     batteryNameFromTable: '',
     manufacturerFromTable: '',
     serialFromTable: '',
@@ -132,7 +154,7 @@ function parseHTMLTables(doc: Document): {
     for (const row of rows) {
       const cells = row.querySelectorAll('td, th');
       if (cells.length >= 2) {
-        const label = cleanCellText(cells[0].textContent ?? '').toLowerCase();
+        const label = normalizeLabel(cells[0].textContent ?? '');
         const value = cleanCellText(cells[1].textContent ?? '');
         if (isInstalledBatteryTable && label === 'name' && value && !result.batteryNameFromTable) {
           result.batteryNameFromTable = value;
@@ -154,10 +176,52 @@ function parseHTMLTables(doc: Document): {
           const v = parseMwh(value);
           if (v > 0) result.fullChargeFromTable = v;
         }
-        if (label.includes('cycle count')) {
-          const v = parseInt(value.replace(/[^0-9]/g, ''));
-          if (!isNaN(v)) result.cycleCountFromTable = v;
+        if (label.includes('cycle count') || label === 'cycles' || label === 'cycle') {
+          const v = parseCycleCount(value);
+          if (v !== null) {
+            result.cycleCountFromTable = v;
+            result.cycleCountKnownFromTable = true;
+          }
         }
+      }
+    }
+
+    // Some OEM/Windows versions render installed batteries horizontally:
+    // header labels in the first row, battery values in following row(s).
+    if (isInstalledBatteryTable && rows.length >= 2) {
+      const headerCells = Array.from(rows[0].querySelectorAll('td, th')).map(cell => normalizeLabel(cell.textContent ?? ''));
+      const valueRows = Array.from(rows).slice(1);
+      const cycleIdx = headerCells.findIndex(label => label.includes('cycle count') || label === 'cycles' || label === 'cycle');
+      const designIdx = headerCells.findIndex(label => label.includes('design capacity'));
+      const fullIdx = headerCells.findIndex(label => label.includes('full charge capacity'));
+      const nameIdx = headerCells.findIndex(label => label === 'name' || label.includes('battery name') || label.includes('model'));
+      const mfrIdx = headerCells.findIndex(label => label === 'manufacturer');
+      const serialIdx = headerCells.findIndex(label => label.includes('serial'));
+      const chemIdx = headerCells.findIndex(label => label === 'chemistry');
+
+      for (const row of valueRows) {
+        const values = Array.from(row.querySelectorAll('td, th')).map(cell => cleanCellText(cell.textContent ?? ''));
+        if (values.length < 2) continue;
+
+        if (cycleIdx >= 0 && values[cycleIdx] && !result.cycleCountKnownFromTable) {
+          const v = parseCycleCount(values[cycleIdx]);
+          if (v !== null) {
+            result.cycleCountFromTable = v;
+            result.cycleCountKnownFromTable = true;
+          }
+        }
+        if (designIdx >= 0 && values[designIdx] && result.designCapacityFromTable === 0) {
+          const v = parseMwh(values[designIdx]);
+          if (v > 0) result.designCapacityFromTable = v;
+        }
+        if (fullIdx >= 0 && values[fullIdx] && result.fullChargeFromTable === 0) {
+          const v = parseMwh(values[fullIdx]);
+          if (v > 0) result.fullChargeFromTable = v;
+        }
+        if (nameIdx >= 0 && values[nameIdx] && !result.batteryNameFromTable) result.batteryNameFromTable = values[nameIdx];
+        if (mfrIdx >= 0 && values[mfrIdx] && !result.manufacturerFromTable) result.manufacturerFromTable = values[mfrIdx];
+        if (serialIdx >= 0 && values[serialIdx] && !result.serialFromTable) result.serialFromTable = values[serialIdx];
+        if (chemIdx >= 0 && values[chemIdx] && !result.chemistryFromTable) result.chemistryFromTable = values[chemIdx];
       }
     }
 
@@ -334,14 +398,24 @@ export function parseReport(htmlText: string, filename: string): BatteryReport {
             ?? raw.match(/DESIGN CAPACITY[\s\S]{0,20}?([\d,]+)\s*mWh/i);
   const fccM = raw.match(/FULL CHARGE CAPACITY\s+([\d,]+)\s*mWh/i)
             ?? raw.match(/FULL CHARGE CAPACITY[\s\S]{0,20}?([\d,]+)\s*mWh/i);
-  const cyM = raw.match(/CYCLE COUNT\s+(\d+)/i)
-            ?? raw.match(/CYCLE COUNT[\s\S]{0,10}?(\d+)/i);
+  const cyM = raw.match(/(?:CYCLE COUNT|CYCLES?)\s*(?:\:|\t| )+\s*(\d[\d,]*)/i)
+            ?? raw.match(/(?:CYCLE COUNT|CYCLES?)[\s\S]{0,40}?(\d[\d,]*)/i);
   let dc = parseMwh(findTableValue(doc, 'DESIGN CAPACITY', 'installed batteries') ?? '');
   let fcc = parseMwh(findTableValue(doc, 'FULL CHARGE CAPACITY', 'installed batteries') ?? '');
-  let cy = parseInt((findTableValue(doc, 'CYCLE COUNT', 'installed batteries') ?? '').replace(/[^0-9]/g, ''));
+  const cycleTableValue = findTableValue(doc, 'CYCLE COUNT', 'installed batteries')
+    ?? findTableValue(doc, 'CYCLES', 'installed batteries');
+  let parsedCycle = cycleTableValue ? parseCycleCount(cycleTableValue) : null;
+  let cy = parsedCycle ?? 0;
+  let cycleCountKnown = parsedCycle !== null;
   if (!dc && dcM) dc = parseInt(dcM[1].replace(/,/g, ''));
   if (!fcc && fccM) fcc = parseInt(fccM[1].replace(/,/g, ''));
-  if (isNaN(cy)) cy = cyM ? parseInt(cyM[1]) : 0;
+  if (!cycleCountKnown && cyM) {
+    parsedCycle = parseCycleCount(cyM[1]);
+    if (parsedCycle !== null) {
+      cy = parsedCycle;
+      cycleCountKnown = true;
+    }
+  }
 
   // ── Parse Tables ────────────────────────────────────────
   const tables = parseHTMLTables(doc);
@@ -364,8 +438,9 @@ export function parseReport(htmlText: string, filename: string): BatteryReport {
   if (fcc === 0 && tables.fullChargeFromTable > 0) {
     fcc = tables.fullChargeFromTable;
   }
-  if (cy === 0 && tables.cycleCountFromTable > 0) {
+  if (!cycleCountKnown && tables.cycleCountKnownFromTable) {
     cy = tables.cycleCountFromTable;
+    cycleCountKnown = true;
   }
 
   // ── Last-resort: infer from capacity history ──────────
@@ -426,6 +501,7 @@ export function parseReport(htmlText: string, filename: string): BatteryReport {
       designCapacity: dc || 0,
       fullChargeCapacity: fcc || 0,
       cycleCount: cy || 0,
+      cycleCountKnown,
     },
     capacityHistory,
     lifeEstimates,

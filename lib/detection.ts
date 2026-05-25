@@ -10,6 +10,7 @@ import { linearRegression } from './health';
 export function detectFakeBattery(report: BatteryReport): { isSuspicious: boolean; reasons: string[] } {
   const reasons: string[] = [];
   const { designCapacity: dc, fullChargeCapacity: fcc, cycleCount: cc, chemistry } = report.battery;
+  const hasCycleData = report.battery.cycleCountKnown ?? cc > 0;
 
   if (dc > 100000) reasons.push('Design capacity exceeds 100Wh — unusually high for a laptop battery');
   if (dc > 0 && dc < 5000) reasons.push('Design capacity below 5Wh — suspiciously low');
@@ -17,8 +18,8 @@ export function detectFakeBattery(report: BatteryReport): { isSuspicious: boolea
   if (!['lion', 'lip', 'li-ion', 'lipo', 'nimh', 'nicd'].includes(chemistry.toLowerCase())) {
     reasons.push(`Unusual battery chemistry: "${chemistry}"`);
   }
-  if (cc === 0 && dc > 0 && fcc < dc * 0.85) reasons.push('Zero cycle count but significant wear — data inconsistency');
-  if (cc > 2000) reasons.push('Cycle count exceeds 2000 — extremely unusual for a laptop battery');
+  if (hasCycleData && cc === 0 && dc > 0 && fcc < dc * 0.85) reasons.push('Zero cycle count but significant wear — data inconsistency');
+  if (hasCycleData && cc > 2000) reasons.push('Cycle count exceeds 2000 — extremely unusual for a laptop battery');
 
   return { isSuspicious: reasons.length > 0, reasons };
 }
@@ -71,7 +72,8 @@ export function estimateDeviceAge(report: BatteryReport): { months: number; labe
 
   // Fallback: estimate from cycle count (~20 cycles per month typical)
   const cc = report.battery.cycleCount;
-  if (cc > 0) {
+  const hasCycleData = report.battery.cycleCountKnown ?? cc > 0;
+  if (hasCycleData && cc > 0) {
     const months = Math.max(1, Math.round(cc / 20));
     const label = months > 24 ? `~${Math.round(months / 12)} years` : `~${months} months`;
     return { months, label };

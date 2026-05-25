@@ -7,6 +7,7 @@ export default function CompareView({ reports }: { reports: BatteryReport[] }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {reports.map((r, i) => {
         const h = computeHealth(r);
+        const hasCycleData = r.battery.cycleCountKnown ?? r.battery.cycleCount > 0;
         return (
           <div key={i} className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5 hover:border-[var(--color-border2)] transition-all">
             <div className="flex items-start justify-between mb-3">
@@ -23,7 +24,7 @@ export default function CompareView({ reports }: { reports: BatteryReport[] }) {
                 { l: 'Design Capacity', v: `${(r.battery.designCapacity / 1000).toFixed(1)} Wh` },
                 { l: 'Full Charge', v: `${(r.battery.fullChargeCapacity / 1000).toFixed(1)} Wh` },
                 { l: 'Wear Level', v: `${h.wearPct}%` },
-                { l: 'Cycle Count', v: `${r.battery.cycleCount}` },
+                { l: 'Cycle Count', v: hasCycleData ? `${r.battery.cycleCount}` : 'N/A' },
                 { l: 'Avg Life', v: h.avgLife > 0 ? `${h.avgLife}h` : 'N/A' },
                 { l: 'Status', v: h.status },
               ].map((row, j) => (

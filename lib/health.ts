@@ -32,6 +32,7 @@ export function linearRegression(points: Array<{ x: number; y: number }>): Regre
 export function computeHealth(report: BatteryReport): HealthAnalysis {
   const { designCapacity: dc, fullChargeCapacity: fcc, cycleCount: cc } = report.battery;
   const hasCapacityData = dc > 0 && fcc > 0;
+  const hasCycleData = report.battery.cycleCountKnown ?? cc > 0;
 
   if (!hasCapacityData) {
     const avgLife = report.lifeEstimates.length
@@ -48,7 +49,7 @@ export function computeHealth(report: BatteryReport): HealthAnalysis {
       grade: 'N/A',
       status: 'Unknown',
       color: '#ffb830',
-      remainingCycles: 0,
+      remainingCycles: hasCycleData ? Math.max(0, 500 - cc) : 0,
       avgLife: +avgLife.toFixed(1),
       dailyDrainAvg,
       estimatedLifespan: 'Unknown',
@@ -65,10 +66,12 @@ export function computeHealth(report: BatteryReport): HealthAnalysis {
   // ── Scoring Algorithm ───────────────────────────────────
   let score = 100;
   score -= Math.min(wearPct * 1.5, 40);
-  if (cc > 400) score -= 15;
-  else if (cc > 300) score -= 10;
-  else if (cc > 200) score -= 5;
-  else if (cc > 100) score -= 2;
+  if (hasCycleData) {
+    if (cc > 400) score -= 15;
+    else if (cc > 300) score -= 10;
+    else if (cc > 200) score -= 5;
+    else if (cc > 100) score -= 2;
+  }
 
   const avgLife = report.lifeEstimates.length
     ? report.lifeEstimates.reduce((a, b) => a + b.active, 0) / report.lifeEstimates.length
@@ -86,7 +89,7 @@ export function computeHealth(report: BatteryReport): HealthAnalysis {
   else if (score >= 50) { status = 'Degraded'; color = '#ff9500'; grade = 'C'; }
   else { status = 'Replace Soon'; color = '#ff4f4f'; grade = 'Replace Soon'; }
 
-  const remainingCycles = Math.max(0, 500 - cc);
+  const remainingCycles = hasCycleData ? Math.max(0, 500 - cc) : 0;
 
   // ── Regression ──────────────────────────────────────────
   const capHist = report.capacityHistory;
@@ -134,7 +137,7 @@ export function computeHealth(report: BatteryReport): HealthAnalysis {
   if (capHist.length >= 2) {
     const months = capHist.length * 1.5;
     deviceAge = months > 24 ? `~${Math.round(months / 12)} years` : `~${Math.round(months)} months`;
-  } else if (cc > 0) {
+  } else if (hasCycleData && cc > 0) {
     const estMonths = Math.round(cc / 20); // ~20 cycles per month average
     deviceAge = estMonths > 24 ? `~${Math.round(estMonths / 12)} years` : `~${estMonths} months`;
   }
@@ -156,6 +159,7 @@ export function computeHealth(report: BatteryReport): HealthAnalysis {
 export function getVerdicts(report: BatteryReport, health: HealthAnalysis): VerdictItem[] {
   const items: VerdictItem[] = [];
   const { cycleCount: cc, designCapacity: dc, fullChargeCapacity: fcc } = report.battery;
+  const hasCycleData = report.battery.cycleCountKnown ?? cc > 0;
 
   if (dc <= 0 || fcc <= 0) {
     items.push({
@@ -187,12 +191,16 @@ export function getVerdicts(report: BatteryReport, health: HealthAnalysis): Verd
   }
 
   // ── Cycle Count ─────────────────────────────────────────
-  if (cc < 200) {
-    items.push({ type: 'good', icon: '✓', title: 'Low cycle count', desc: `${cc} cycles — well below the ~500 cycle typical lifespan.` });
-  } else if (cc < 350) {
-    items.push({ type: 'info', icon: 'ℹ', title: 'Moderate cycle count', desc: `${cc} cycles. Li-Ion batteries are rated ~300–500 cycles. Monitor capacity trends.` });
+  if (hasCycleData) {
+    if (cc < 200) {
+      items.push({ type: 'good', icon: '✓', title: 'Low cycle count', desc: `${cc} cycles — well below the ~500 cycle typical lifespan.` });
+    } else if (cc < 350) {
+      items.push({ type: 'info', icon: 'ℹ', title: 'Moderate cycle count', desc: `${cc} cycles. Li-Ion batteries are rated ~300–500 cycles. Monitor capacity trends.` });
+    } else {
+      items.push({ type: 'warn', icon: '!', title: 'Approaching end of rated lifespan', desc: `${cc} cycles. Beyond 350–400, performance may degrade faster.` });
+    }
   } else {
-    items.push({ type: 'warn', icon: '!', title: 'Approaching end of rated lifespan', desc: `${cc} cycles. Beyond 350–400, performance may degrade faster.` });
+    items.push({ type: 'info', icon: 'ℹ', title: 'Cycle count not reported', desc: 'This report did not include a readable cycle count. Some laptop firmware does not expose it to Windows.' });
   }
 
   // ── Battery Life ────────────────────────────────────────

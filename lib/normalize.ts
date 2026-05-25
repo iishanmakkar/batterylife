@@ -22,6 +22,7 @@ export function normalizeReport(report: BatteryReport): BatteryReport {
       name: report.battery.name.toUpperCase().startsWith('DESKTOP-') ? 'Unknown' : report.battery.name,
       designCapacity,
       fullChargeCapacity,
+      cycleCountKnown: report.battery.cycleCountKnown ?? report.battery.cycleCount > 0,
     },
   };
 }

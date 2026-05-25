@@ -19,6 +19,7 @@ export interface BatteryInfo {
   designCapacity: number;       // mWh — original rated capacity
   fullChargeCapacity: number;   // mWh — current max charge
   cycleCount: number;
+  cycleCountKnown?: boolean;
 }
 
 /** Capacity history data point */

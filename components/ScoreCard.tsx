@@ -7,6 +7,7 @@ export default function ScoreCard({ report, health }: { report: BatteryReport; h
   const circ = 2 * Math.PI * 82;
   const offset = circ - (health.score / 100) * circ;
   const hasData = report.battery.designCapacity > 0 && report.battery.fullChargeCapacity > 0;
+  const hasCycleData = report.battery.cycleCountKnown ?? report.battery.cycleCount > 0;
 
   return (
     <div className="card-glow" style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 20, padding: 24 }}>
@@ -51,8 +52,8 @@ export default function ScoreCard({ report, health }: { report: BatteryReport; h
                 <span className={`pill-${health.wearPct < 15 ? 'good' : 'warn'}`} style={{ padding: '4px 14px', borderRadius: 999, fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
                   ⚡ {health.wearPct}% wear
                 </span>
-                <span className={`pill-${report.battery.cycleCount < 300 ? 'good' : 'warn'}`} style={{ padding: '4px 14px', borderRadius: 999, fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  🔄 {report.battery.cycleCount} cycles
+                <span className={`pill-${!hasCycleData || report.battery.cycleCount < 300 ? 'good' : 'warn'}`} style={{ padding: '4px 14px', borderRadius: 999, fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  🔄 {hasCycleData ? `${report.battery.cycleCount} cycles` : 'cycles N/A'}
                 </span>
                 <span className={`pill-${health.avgLife >= 6 ? 'good' : health.avgLife >= 4 ? 'warn' : 'bad'}`} style={{ padding: '4px 14px', borderRadius: 999, fontSize: 12, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
                   ⏱ {health.avgLife || '?'}h avg life
