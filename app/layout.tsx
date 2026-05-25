@@ -64,6 +64,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#080c12" />
         <meta name="google-adsense-account" content="ca-pub-6088632479455301" />
+        <meta name="monetag" content="58fc10d2e262143b783c9aecaaa355d0" />
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6088632479455301"
