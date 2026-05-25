@@ -50,9 +50,9 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
   }, [processFile]);
 
   return (
-    <section className="w-full px-6 mb-16">
-      <div className="w-full max-w-[800px] mx-auto">
-        <input ref={fileRef} type="file" accept=".html,.htm" className="hidden" onChange={handleChange} multiple />
+    <section style={{ width: '100%', padding: '0 24px', marginBottom: 64 }}>
+      <div style={{ width: '100%', maxWidth: 800, margin: '0 auto' }}>
+        <input ref={fileRef} type="file" accept=".html,.htm" style={{ display: 'none' }} onChange={handleChange} multiple />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -62,8 +62,10 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
-          className="relative rounded-3xl cursor-pointer transition-all duration-300 flex flex-col items-center text-center"
           style={{
+            position: 'relative', borderRadius: 24, cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
             background: 'var(--bg2)',
             border: dragging ? '2px solid var(--acc)' : '2px dashed var(--bdr2)',
             padding: 'clamp(40px, 6vw, 64px) 32px',
@@ -71,44 +73,41 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
           }}
         >
           {/* Battery Icon */}
-          <div
-            className="flex items-center justify-center mb-6"
-            style={{
-              width: 72, height: 72, borderRadius: 20,
-              background: 'linear-gradient(135deg, rgba(0,255,163,0.15), rgba(0,212,255,0.1))',
-              border: '1px solid rgba(0,255,163,0.2)',
-            }}
-          >
+          <div style={{
+            width: 72, height: 72, borderRadius: 20, marginBottom: 24,
+            background: 'linear-gradient(135deg, rgba(0,255,163,0.15), rgba(0,212,255,0.1))',
+            border: '1px solid rgba(0,255,163,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
             {loading ? (
-              <div className="animate-spin" style={{ width: 32, height: 32, border: '3px solid var(--bdr2)', borderTopColor: 'var(--acc)', borderRadius: '50%' }} />
+              <div style={{ width: 32, height: 32, border: '3px solid var(--bdr2)', borderTopColor: 'var(--acc)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
             ) : (
               <Battery style={{ width: 32, height: 32, color: 'var(--acc)' }} />
             )}
           </div>
 
           {/* Title */}
-          <h3 className="font-syne font-bold mb-2" style={{ fontSize: 'clamp(20px, 3vw, 26px)', color: 'var(--tx1)' }}>
+          <h3 className="font-syne" style={{ fontWeight: 700, marginBottom: 8, fontSize: 'clamp(20px, 3vw, 26px)', color: 'var(--tx1)' }}>
             Drop your battery report here
           </h3>
 
           {/* Subtitle */}
-          <p className="mb-8" style={{ fontSize: 14, color: 'var(--tx2)', maxWidth: 420 }}>
-            Drag &amp; drop your <code className="font-mono" style={{ color: 'var(--acc)', fontSize: 13, background: 'rgba(0,255,163,0.08)', padding: '2px 6px', borderRadius: 4 }}>battery-report.html</code> file, or click to browse.
-            Supports multiple files for comparison.
+          <p style={{ fontSize: 14, color: 'var(--tx2)', maxWidth: 440, marginBottom: 32, lineHeight: 1.6 }}>
+            Drag &amp; drop your{' '}
+            <code className="font-mono" style={{ color: 'var(--acc)', fontSize: 13, background: 'rgba(0,255,163,0.08)', padding: '2px 6px', borderRadius: 4 }}>
+              battery-report.html
+            </code>{' '}
+            file, or click to browse. Supports multiple files for comparison.
           </p>
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 items-center">
+          <div style={{ display: 'flex', flexDirection: 'row', gap: 12, alignItems: 'center', flexWrap: 'wrap' as const, justifyContent: 'center' }}>
             <button
               onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-              className="flex items-center gap-2 cursor-pointer font-semibold transition-all active:scale-95"
               style={{
-                background: 'var(--acc)',
-                color: '#080c12',
-                padding: '12px 28px',
-                borderRadius: 12,
-                fontSize: 14,
-                border: 'none',
+                display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                fontWeight: 600, background: 'var(--acc)', color: '#080c12',
+                padding: '12px 28px', borderRadius: 12, fontSize: 14, border: 'none',
                 boxShadow: '0 4px 20px rgba(0,255,163,0.25)',
               }}
             >
@@ -116,13 +115,10 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onDemo(); }}
-              className="flex items-center gap-2 cursor-pointer font-medium transition-all active:scale-95"
               style={{
-                background: 'transparent',
-                color: 'var(--tx1)',
-                padding: '12px 28px',
-                borderRadius: 12,
-                fontSize: 14,
+                display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                fontWeight: 500, background: 'transparent', color: 'var(--tx1)',
+                padding: '12px 28px', borderRadius: 12, fontSize: 14,
                 border: '1px solid var(--bdr2)',
               }}
             >
@@ -132,12 +128,12 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
 
           {/* Error */}
           {error && (
-            <p className="mt-4" style={{ fontSize: 13, color: 'var(--dng)' }}>{error}</p>
+            <p style={{ marginTop: 16, fontSize: 13, color: 'var(--dng)' }}>{error}</p>
           )}
         </motion.div>
 
         {/* Accepted formats */}
-        <p className="text-center mt-4" style={{ fontSize: 12, color: 'var(--tx3)' }}>
+        <p style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: 'var(--tx3)' }}>
           Accepted: <code className="font-mono" style={{ color: 'var(--tx2)' }}>battery-report.html</code> generated via{' '}
           <code className="font-mono" style={{ color: 'var(--acc)', fontSize: 11 }}>powercfg /batteryreport</code>
         </p>

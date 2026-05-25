@@ -123,10 +123,10 @@ function AppContent() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex flex-col" style={{ background: 'var(--bg0)', color: 'var(--tx1)' }}>
+    <div style={{ minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg0)', color: 'var(--tx1)' }}>
       <Navbar reportCount={reports.length} />
 
-      <main className="flex-1 w-full">
+      <main style={{ flex: 1, width: '100%' }}>
         {/* Hero always visible */}
         <HeroSection analyzedCount={analyzedCount} />
 
@@ -134,7 +134,9 @@ function AppContent() {
         {!showDashboard && (
           <>
             <UploadZone onReportParsed={handleReportParsed} onDemo={handleDemo} />
-            <AdUnit slot="8901234567" format="horizontal" className="max-w-4xl mx-auto px-6 mb-12" />
+            <div style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
+              <AdUnit slot="8901234567" format="horizontal" />
+            </div>
           </>
         )}
 
@@ -149,13 +151,17 @@ function AppContent() {
         )}
 
         {/* Divider */}
-        <div className="max-w-4xl mx-auto px-6">
+        <div style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px' }}>
           <div style={{ height: 1, background: 'linear-gradient(to right, transparent, var(--bdr), transparent)' }} />
         </div>
 
-        <AdUnit slot="9012345678" format="horizontal" className="max-w-4xl mx-auto px-6 mt-8" />
+        <div style={{ maxWidth: 896, margin: '0 auto', padding: '32px 24px 0' }}>
+          <AdUnit slot="9012345678" format="horizontal" />
+        </div>
         <FAQSection />
-        <AdUnit slot="0123456789" format="horizontal" className="max-w-4xl mx-auto px-6 mb-12" />
+        <div style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
+          <AdUnit slot="0123456789" format="horizontal" />
+        </div>
       </main>
 
       <Footer />
