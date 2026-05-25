@@ -17,6 +17,49 @@ function parseMwh(text: string): number {
   return 0;
 }
 
+function cleanCellText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+function tableContext(table: HTMLTableElement): string {
+  const parts: string[] = [];
+  if (table.caption?.textContent) parts.push(table.caption.textContent);
+
+  let sibling = table.previousElementSibling;
+  let scanned = 0;
+  while (sibling && scanned < 4) {
+    if (/^H[1-6]$/i.test(sibling.tagName)) {
+      parts.push(sibling.textContent ?? '');
+    }
+    sibling = sibling.previousElementSibling;
+    scanned += 1;
+  }
+
+  return cleanCellText(parts.join(' ')).toLowerCase();
+}
+
+function findTableValue(doc: Document, labelText: string, contextText?: string): string | null {
+  const wantedLabel = cleanCellText(labelText).toLowerCase();
+  const wantedContext = contextText?.toLowerCase();
+
+  for (const table of Array.from(doc.querySelectorAll('table'))) {
+    const context = tableContext(table as HTMLTableElement);
+    if (wantedContext && !context.includes(wantedContext)) continue;
+
+    for (const row of Array.from(table.querySelectorAll('tr'))) {
+      const cells = Array.from(row.querySelectorAll('td, th'));
+      if (cells.length < 2) continue;
+
+      const label = cleanCellText(cells[0].textContent ?? '').toLowerCase();
+      if (label === wantedLabel) {
+        return cleanCellText(cells[1].textContent ?? '') || null;
+      }
+    }
+  }
+
+  return null;
+}
+
 /** Convert time string (HH:MM:SS or Xh Ym) to hours */
 function parseTimeToHours(text: string): number {
   const parts = text.trim().split(':');
@@ -37,6 +80,10 @@ function parseDurationHours(text: string): number {
   let hrs = 0;
   if (h) hrs += parseInt(h[1]);
   if (m) hrs += parseInt(m[1]) / 60;
+  // Also try HH:MM:SS format
+  const parts = text.trim().split(':');
+  if (parts.length === 3) hrs = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
+  if (parts.length === 2) hrs = parseInt(parts[0]) + parseInt(parts[1]) / 60;
   return Math.max(hrs, 0.01);
 }
 
@@ -46,6 +93,13 @@ function parseHTMLTables(doc: Document): {
   lifeEstimates: LifeEstimate[];
   weeklyUsage: UsageEntry[];
   drainSessions: DrainSession[];
+  designCapacityFromTable: number;
+  fullChargeFromTable: number;
+  cycleCountFromTable: number;
+  batteryNameFromTable: string;
+  manufacturerFromTable: string;
+  serialFromTable: string;
+  chemistryFromTable: string;
 } {
   const tables = doc.querySelectorAll('table');
   const result = {
@@ -53,29 +107,81 @@ function parseHTMLTables(doc: Document): {
     lifeEstimates: [] as LifeEstimate[],
     weeklyUsage: [] as UsageEntry[],
     drainSessions: [] as DrainSession[],
+    designCapacityFromTable: 0,
+    fullChargeFromTable: 0,
+    cycleCountFromTable: 0,
+    batteryNameFromTable: '',
+    manufacturerFromTable: '',
+    serialFromTable: '',
+    chemistryFromTable: '',
   };
 
   for (const table of tables) {
     const caption = table.caption ? table.caption.textContent?.trim().toLowerCase() ?? '' : '';
     const firstRow = table.querySelector('tr');
     const headerText = firstRow ? firstRow.textContent?.trim().toLowerCase() ?? '' : '';
-    const context = caption || headerText;
+    const context = `${tableContext(table as HTMLTableElement)} ${caption} ${headerText}`.trim();
+    const isInstalledBatteryTable = context.includes('installed batteries') || context.includes('battery information');
     const rows = table.querySelectorAll('tr');
     const headers = rows[0]
       ? Array.from(rows[0].querySelectorAll('th, td')).map(h => h.textContent?.trim().toLowerCase() ?? '')
       : [];
 
+    // ── Battery Info Table (Design Capacity, Full Charge, Cycle Count) ──
+    // Some reports put specs in a 2-column table: label | value
+    for (const row of rows) {
+      const cells = row.querySelectorAll('td, th');
+      if (cells.length >= 2) {
+        const label = cleanCellText(cells[0].textContent ?? '').toLowerCase();
+        const value = cleanCellText(cells[1].textContent ?? '');
+        if (isInstalledBatteryTable && label === 'name' && value && !result.batteryNameFromTable) {
+          result.batteryNameFromTable = value;
+        }
+        if (isInstalledBatteryTable && label === 'manufacturer' && value && !result.manufacturerFromTable) {
+          result.manufacturerFromTable = value;
+        }
+        if (isInstalledBatteryTable && label === 'serial number' && value && !result.serialFromTable) {
+          result.serialFromTable = value;
+        }
+        if (isInstalledBatteryTable && label === 'chemistry' && value && !result.chemistryFromTable) {
+          result.chemistryFromTable = value;
+        }
+        if (label.includes('design capacity')) {
+          const v = parseMwh(value);
+          if (v > 0) result.designCapacityFromTable = v;
+        }
+        if (label.includes('full charge capacity')) {
+          const v = parseMwh(value);
+          if (v > 0) result.fullChargeFromTable = v;
+        }
+        if (label.includes('cycle count')) {
+          const v = parseInt(value.replace(/[^0-9]/g, ''));
+          if (!isNaN(v)) result.cycleCountFromTable = v;
+        }
+      }
+    }
+
     // ── Capacity History Table ────────────────────────────
-    if (context.includes('full charge capacity') || caption.includes('battery capacity')) {
+    if (context.includes('full charge capacity') || caption.includes('battery capacity')
+        || context.includes('capacity history')) {
       const dataRows = Array.from(rows).slice(1);
       for (const row of dataRows) {
         const cells = row.querySelectorAll('td');
         if (cells.length >= 2) {
           const dateMatch = cells[0].textContent?.trim().match(/(\d{4}-\d{2}-\d{2})/);
           if (dateMatch) {
-            const val = parseMwh(cells[1].textContent ?? '');
+            // Try column 1 first (full charge), then column 2 if needed
+            let val = parseMwh(cells[1].textContent ?? '');
+            // Some reports have: Date | Full Charge | Design Capacity
             if (val > 10000 && val < 200000) {
               result.capacityHistory.push({ period: dateMatch[1].slice(5), fcc: val });
+              // If there's a design capacity column, capture it
+              if (cells.length >= 3) {
+                const dcVal = parseMwh(cells[2].textContent ?? '');
+                if (dcVal > 10000 && dcVal < 200000 && result.designCapacityFromTable === 0) {
+                  result.designCapacityFromTable = dcVal;
+                }
+              }
             }
           }
         }
@@ -83,7 +189,8 @@ function parseHTMLTables(doc: Document): {
     }
 
     // ── Battery Life Estimates Table ──────────────────────
-    if (context.includes('battery life') || (headerText.includes('active') && headerText.includes('standby'))) {
+    if (context.includes('battery life') || (headerText.includes('active') && headerText.includes('standby'))
+        || context.includes('life estimates')) {
       const dataRows = Array.from(rows).slice(1);
       for (const row of dataRows) {
         const cells = row.querySelectorAll('td');
@@ -100,31 +207,34 @@ function parseHTMLTables(doc: Document): {
       }
     }
 
-    // ── Recent Usage / Drain Sessions Table ───────────────
-    if (context.includes('recent usage') || (headerText.includes('start time') && headerText.includes('state'))) {
+    // ── Battery Usage / Drain Sessions Table ──────────────
+    if (context.includes('battery usage') || context.includes('battery drains') || headerText.includes('energy drained')) {
       const dataRows = Array.from(rows).slice(1);
       const bodyText = doc.body?.textContent ?? '';
       const fccMatch = bodyText.match(/FULL CHARGE CAPACITY\s+([\d,]+)/i);
       const dcMatch = bodyText.match(/DESIGN CAPACITY\s+([\d,]+)/i);
       const dcVal = dcMatch ? parseInt(dcMatch[1].replace(/,/g, '')) : null;
       const fccVal = fccMatch ? parseInt(fccMatch[1].replace(/,/g, '')) : null;
-      const capacity = (dcVal && fccVal) ? dcVal : (fccVal || 50000);
+      const capacity = (dcVal && fccVal) ? dcVal : (fccVal || result.designCapacityFromTable || 50000);
 
       for (const row of dataRows) {
         const cells = row.querySelectorAll('td');
-        if (cells.length >= 4) {
-          const startText = cells[0].textContent?.trim() ?? '';
-          const stateText = cells[2]?.textContent?.trim().toLowerCase() ?? '';
-          const energyText = cells[3]?.textContent?.trim() ?? '';
+        if (cells.length >= 5) {
+          const startText = cleanCellText(cells[0].textContent ?? '');
+          const stateText = cleanCellText(cells[1]?.textContent ?? '').toLowerCase();
+          const durationText = cleanCellText(cells[2]?.textContent ?? '');
+          const pctText = cleanCellText(cells[3]?.textContent ?? '');
+          const energyText = cleanCellText(cells[4]?.textContent ?? '');
+          const pctVal = parseInt(pctText.replace(/[^0-9]/g, ''));
           const mwhVal = parseMwh(energyText);
 
-          if (stateText.includes('battery') && mwhVal > 0) {
+          if (stateText && mwhVal > 0) {
             result.drainSessions.push({
               date: startText,
-              dur: cells[1]?.textContent?.trim() ?? '',
-              drain: +((mwhVal / capacity) * 100).toFixed(1),
+              dur: durationText,
+              drain: !isNaN(pctVal) && pctVal > 0 ? pctVal : +((mwhVal / capacity) * 100).toFixed(1),
               mwh: mwhVal,
-              rate: mwhVal > 0 && cells[1] ? Math.round(mwhVal / parseDurationHours(cells[1].textContent ?? '')) : 0,
+              rate: mwhVal > 0 && durationText ? Math.round(mwhVal / parseDurationHours(durationText)) : 0,
             });
           }
         }
@@ -132,7 +242,29 @@ function parseHTMLTables(doc: Document): {
     }
 
     // ── Weekly Usage Table ────────────────────────────────
-    if (context.includes('battery usage') || (headerText.includes('battery') && headerText.includes('ac') && headers.length >= 3)) {
+    if (context.includes('usage history')) {
+      const dataRows = Array.from(rows).slice(2);
+      for (const row of dataRows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 6) {
+          const dateText = cleanCellText(cells[0]?.textContent ?? '');
+          const dateMatch = dateText.match(/\d{4}-\d{2}-\d{2}/);
+          if (!dateMatch) continue;
+
+          const batActive = parseTimeToHours(cleanCellText(cells[1]?.textContent ?? ''));
+          const batStandby = parseTimeToHours(cleanCellText(cells[2]?.textContent ?? ''));
+          const acActive = parseTimeToHours(cleanCellText(cells[4]?.textContent ?? ''));
+          const acStandby = parseTimeToHours(cleanCellText(cells[5]?.textContent ?? ''));
+          const bat = batActive + (batStandby > 0 && batStandby < 24 ? batStandby : 0);
+          const ac = acActive + (acStandby > 0 && acStandby < 24 ? acStandby : 0);
+          result.weeklyUsage.push({
+            date: dateMatch[0].slice(5),
+            bat: +bat.toFixed(2),
+            ac: +ac.toFixed(2),
+          });
+        }
+      }
+    } else if ((headerText.includes('battery') && headerText.includes('ac') && headers.length >= 3)) {
       const dateCol = headers.indexOf('date') !== -1 ? headers.indexOf('date') : 0;
       const durCol = headers.indexOf('duration') !== -1 ? headers.indexOf('duration') : 1;
       const energyCol = headers.indexOf('energy drained') !== -1 ? headers.indexOf('energy drained') : headers.length - 1;
@@ -159,10 +291,7 @@ function parseHTMLTables(doc: Document): {
   if (result.capacityHistory.length > 0) result.capacityHistory = result.capacityHistory.slice(-20);
   if (result.lifeEstimates.length > 0) result.lifeEstimates = result.lifeEstimates.slice(-15);
   if (result.weeklyUsage.length > 0) {
-    result.weeklyUsage = result.weeklyUsage.slice(-14).map(u => ({
-      ...u,
-      ac: +(u.bat * 0.3).toFixed(2),
-    }));
+    result.weeklyUsage = result.weeklyUsage.slice(-14);
   }
   if (result.drainSessions.length > 0) {
     result.drainSessions = result.drainSessions.slice(-20).sort((a, b) =>
@@ -180,7 +309,7 @@ function parseHTMLTables(doc: Document): {
 export function parseReport(htmlText: string, filename: string): BatteryReport {
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlText, 'text/html');
-  const raw = doc.body?.innerText ?? htmlText;
+  const raw = doc.body?.innerText ?? doc.body?.textContent ?? htmlText;
 
   // Helper: extract first match from regex on raw text
   const get = (pat: RegExp): string | null => {
@@ -189,31 +318,67 @@ export function parseReport(htmlText: string, filename: string): BatteryReport {
   };
 
   // ── Device Information ──────────────────────────────────
-  const deviceName = get(/SYSTEM PRODUCT NAME\s+([^\n]+)/i)
+  const deviceName = findTableValue(doc, 'SYSTEM PRODUCT NAME')
+    ?? get(/SYSTEM PRODUCT NAME\s+([^\n]+)/i)
     ?? get(/Computer Name[:\t ]+([^\n]+)/i)
     ?? get(/PLATFORM ROLE\s+([^\n]+)/i)
     ?? filename
     ?? 'Unknown Device';
-  const bios = get(/BIOS\s+([^\n]+)/i) ?? 'N/A';
-  const os = get(/OS BUILD\s+([^\n]+)/i) ?? get(/OS VERSION\s+([^\n]+)/i) ?? 'N/A';
-  const repTime = get(/REPORT TIME\s+([^\n]+)/i) ?? new Date().toLocaleString();
+  const bios = findTableValue(doc, 'BIOS') ?? get(/BIOS\s+([^\n]+)/i) ?? 'N/A';
+  const os = findTableValue(doc, 'OS BUILD') ?? get(/OS BUILD\s+([^\n]+)/i) ?? get(/OS VERSION\s+([^\n]+)/i) ?? 'N/A';
+  const repTime = findTableValue(doc, 'REPORT TIME') ?? get(/REPORT TIME\s+([^\n]+)/i) ?? new Date().toLocaleString();
 
-  // ── Battery Specifications ──────────────────────────────
-  const dcM = raw.match(/DESIGN CAPACITY\s+([\d,]+)\s*mWh/i);
-  const fccM = raw.match(/FULL CHARGE CAPACITY\s+([\d,]+)\s*mWh/i);
-  const cyM = raw.match(/CYCLE COUNT\s+(\d+)/i);
-  const dc = dcM ? parseInt(dcM[1].replace(/,/g, '')) : 0;
-  const fcc = fccM ? parseInt(fccM[1].replace(/,/g, '')) : 0;
-  const cy = cyM ? parseInt(cyM[1]) : 0;
-
-  const batName = get(/NAME\s+([A-Z0-9\-]{4,})/i) ?? 'Unknown';
-  const mfr = get(/MANUFACTURER\s+([^\n]+)/i) ?? 'Unknown';
-  const serial = get(/SERIAL NUMBER\s+([^\n]+)/i) ?? 'N/A';
-  const chem = get(/CHEMISTRY\s+([^\n]+)/i) ?? 'LION';
+  // ── Battery Specifications (regex on raw text) ──────────
+  // Try multiple patterns for different report formats
+  const dcM = raw.match(/DESIGN CAPACITY\s+([\d,]+)\s*mWh/i)
+            ?? raw.match(/DESIGN CAPACITY[\s\S]{0,20}?([\d,]+)\s*mWh/i);
+  const fccM = raw.match(/FULL CHARGE CAPACITY\s+([\d,]+)\s*mWh/i)
+            ?? raw.match(/FULL CHARGE CAPACITY[\s\S]{0,20}?([\d,]+)\s*mWh/i);
+  const cyM = raw.match(/CYCLE COUNT\s+(\d+)/i)
+            ?? raw.match(/CYCLE COUNT[\s\S]{0,10}?(\d+)/i);
+  let dc = parseMwh(findTableValue(doc, 'DESIGN CAPACITY', 'installed batteries') ?? '');
+  let fcc = parseMwh(findTableValue(doc, 'FULL CHARGE CAPACITY', 'installed batteries') ?? '');
+  let cy = parseInt((findTableValue(doc, 'CYCLE COUNT', 'installed batteries') ?? '').replace(/[^0-9]/g, ''));
+  if (!dc && dcM) dc = parseInt(dcM[1].replace(/,/g, ''));
+  if (!fcc && fccM) fcc = parseInt(fccM[1].replace(/,/g, ''));
+  if (isNaN(cy)) cy = cyM ? parseInt(cyM[1]) : 0;
 
   // ── Parse Tables ────────────────────────────────────────
   const tables = parseHTMLTables(doc);
   let { capacityHistory, lifeEstimates, weeklyUsage, drainSessions } = tables;
+
+  // Battery identity must come from the installed-battery table when possible.
+  const batName = tables.batteryNameFromTable
+    || findTableValue(doc, 'NAME', 'installed batteries')
+    || (get(/BATTERY\s+\d*\s*NAME\s+([^\n]+)/i)
+      ?? get(/Battery\s+(?:name|model)[:\s]+([^\n]+)/i)
+      ?? 'Unknown');
+  const mfr = tables.manufacturerFromTable || findTableValue(doc, 'MANUFACTURER', 'installed batteries') || (get(/MANUFACTURER\s+([^\n]+)/i) ?? 'Unknown');
+  const serial = tables.serialFromTable || findTableValue(doc, 'SERIAL NUMBER', 'installed batteries') || (get(/SERIAL NUMBER\s+([^\n]+)/i) ?? get(/SERIAL\s+([^\n]+)/i) ?? 'N/A');
+  const chem = tables.chemistryFromTable || findTableValue(doc, 'CHEMISTRY', 'installed batteries') || (get(/CHEMISTRY\s+([^\n]+)/i) ?? 'LION');
+
+  // ── Use table-extracted values as fallback for regex failures ──
+  if (dc === 0 && tables.designCapacityFromTable > 0) {
+    dc = tables.designCapacityFromTable;
+  }
+  if (fcc === 0 && tables.fullChargeFromTable > 0) {
+    fcc = tables.fullChargeFromTable;
+  }
+  if (cy === 0 && tables.cycleCountFromTable > 0) {
+    cy = tables.cycleCountFromTable;
+  }
+
+  // ── Last-resort: infer from capacity history ──────────
+  if (capacityHistory.length > 0) {
+    // Use the first entry as approximate design capacity
+    if (dc === 0) {
+      dc = Math.max(...capacityHistory.map(c => c.fcc));
+    }
+    // Use the last entry as current full charge capacity
+    if (fcc === 0) {
+      fcc = capacityHistory[capacityHistory.length - 1].fcc;
+    }
+  }
 
   // ── Fallback: Text-based capacity history parsing ───────
   if (capacityHistory.length < 4 && dc > 0 && fcc > 0) {

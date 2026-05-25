@@ -33,7 +33,7 @@ export function estimateGamingDamage(report: BatteryReport): {
   if (sessions.length === 0) return { level: 'Unknown', description: 'No drain session data available.', percentage: 0 };
 
   const heavySessions = sessions.filter(s => s.drain > 40);
-  const highRateSessions = sessions.filter(s => s.rate > 300);
+  const highRateSessions = sessions.filter(s => s.rate > 25000);
   const heavyPct = (heavySessions.length / sessions.length) * 100;
   const avgRate = sessions.reduce((a, b) => a + b.rate, 0) / sessions.length;
 
@@ -86,6 +86,10 @@ export function estimateResaleImpact(health: HealthAnalysis): {
   label: string;
   description: string;
 } {
+  if (health.status === 'Unknown') {
+    return { impactPercent: 0, label: 'Unknown', description: 'Resale impact cannot be estimated until capacity data is available.' };
+  }
+
   if (health.wearPct < 5) {
     return { impactPercent: 0, label: 'None', description: 'Battery is essentially new. No impact on resale value.' };
   } else if (health.wearPct < 10) {

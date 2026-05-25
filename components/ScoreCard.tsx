@@ -6,7 +6,7 @@ import type { BatteryReport, HealthAnalysis } from '@/lib/types';
 export default function ScoreCard({ report, health }: { report: BatteryReport; health: HealthAnalysis }) {
   const circ = 2 * Math.PI * 82;
   const offset = circ - (health.score / 100) * circ;
-  const hasData = report.battery.designCapacity > 0;
+  const hasData = report.battery.designCapacity > 0 && report.battery.fullChargeCapacity > 0;
 
   return (
     <div className="card-glow" style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 20, padding: 24 }}>

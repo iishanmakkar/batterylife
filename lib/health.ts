@@ -31,6 +31,33 @@ export function linearRegression(points: Array<{ x: number; y: number }>): Regre
 /** Compute comprehensive battery health analysis */
 export function computeHealth(report: BatteryReport): HealthAnalysis {
   const { designCapacity: dc, fullChargeCapacity: fcc, cycleCount: cc } = report.battery;
+  const hasCapacityData = dc > 0 && fcc > 0;
+
+  if (!hasCapacityData) {
+    const avgLife = report.lifeEstimates.length
+      ? report.lifeEstimates.reduce((a, b) => a + b.active, 0) / report.lifeEstimates.length
+      : 0;
+    const dailyDrainAvg = report.weeklyUsage.length
+      ? +(report.weeklyUsage.reduce((a, b) => a + b.bat, 0) / report.weeklyUsage.length).toFixed(1)
+      : 0;
+
+    return {
+      score: 0,
+      healthPct: 0,
+      wearPct: 0,
+      grade: 'N/A',
+      status: 'Unknown',
+      color: '#ffb830',
+      remainingCycles: 0,
+      avgLife: +avgLife.toFixed(1),
+      dailyDrainAvg,
+      estimatedLifespan: 'Unknown',
+      resaleImpact: 'Unknown',
+      gamingDamage: report.drainSessions.length ? 'Insufficient capacity data' : 'Unknown',
+      deviceAge: 'Unknown',
+      regression: null,
+    };
+  }
 
   const wearPct = dc > 0 ? ((dc - fcc) / dc) * 100 : 0;
   const healthPct = dc > 0 ? (fcc / dc) * 100 : 0;
@@ -129,6 +156,24 @@ export function computeHealth(report: BatteryReport): HealthAnalysis {
 export function getVerdicts(report: BatteryReport, health: HealthAnalysis): VerdictItem[] {
   const items: VerdictItem[] = [];
   const { cycleCount: cc, designCapacity: dc, fullChargeCapacity: fcc } = report.battery;
+
+  if (dc <= 0 || fcc <= 0) {
+    items.push({
+      type: 'warn',
+      icon: '!',
+      title: 'Capacity data unavailable',
+      desc: 'Design capacity or full charge capacity could not be read from this report, so battery health and wear cannot be calculated reliably.',
+    });
+    if (report.capacityHistory.length > 0) {
+      items.push({
+        type: 'info',
+        icon: 'i',
+        title: 'Capacity history detected',
+        desc: `${report.capacityHistory.length} history points were parsed, but current battery specifications are still incomplete.`,
+      });
+    }
+    return items;
+  }
 
   // ── Capacity Retention ──────────────────────────────────
   if (health.wearPct < 5) {

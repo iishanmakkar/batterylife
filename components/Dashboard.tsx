@@ -28,6 +28,9 @@ import UsageChart from './charts/UsageChart';
 import DrainChart from './charts/DrainChart';
 import DonutChart from './charts/DonutChart';
 import CompareChart from './charts/CompareChart';
+import HealthTrendChart from './charts/HealthTrendChart';
+import DrainRateChart from './charts/DrainRateChart';
+import CapacityBreakdownChart from './charts/CapacityBreakdownChart';
 
 interface Props {
   reports: BatteryReport[];
@@ -79,6 +82,24 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
   const batHours = report.weeklyUsage.reduce((a, b) => a + b.bat, 0);
   const acHours = report.weeklyUsage.reduce((a, b) => a + b.ac, 0);
+  const hasCapacityData = report.battery.designCapacity > 0 && report.battery.fullChargeCapacity > 0;
+  const capacityLoss = Math.max(0, report.battery.designCapacity - report.battery.fullChargeCapacity);
+  const bestCapacity = report.capacityHistory.length ? Math.max(...report.capacityHistory.map(c => c.fcc)) : report.battery.fullChargeCapacity;
+  const latestCapacity = report.capacityHistory.length ? report.capacityHistory[report.capacityHistory.length - 1].fcc : report.battery.fullChargeCapacity;
+  const totalEnergyUsed = report.drainSessions.reduce((sum, s) => sum + s.mwh, 0);
+  const avgDrainRate = report.drainSessions.length ? Math.round(report.drainSessions.reduce((sum, s) => sum + s.rate, 0) / report.drainSessions.length) : 0;
+  const maxDrainRate = report.drainSessions.length ? Math.max(...report.drainSessions.map(s => s.rate)) : 0;
+  const totalPowerHours = batHours + acHours;
+  const batteryShare = totalPowerHours > 0 ? (batHours / totalPowerHours) * 100 : 0;
+  const trendPerPoint = health.regression ? Math.round(health.regression.slope) : 0;
+
+  const detailStat = (label: string, value: string, sub: string) => (
+    <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 12, padding: 14 }}>
+      <div style={{ fontSize: 10, color: 'var(--tx3)', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 600, marginBottom: 6 }}>{label}</div>
+      <div className="font-mono" style={{ fontSize: 20, fontWeight: 700, color: 'var(--tx1)', lineHeight: 1.1 }}>{value}</div>
+      <div style={{ fontSize: 11, color: 'var(--tx2)', marginTop: 5 }}>{sub}</div>
+    </div>
+  );
 
   return (
     <motion.div
@@ -165,9 +186,9 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
           {/* Metrics Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
-            <MetricCard icon={<Battery className="w-5 h-5 text-[var(--color-accent)]" />} label="Health" value={`${health.healthPct}%`} sub={`${report.battery.fullChargeCapacity.toLocaleString()} mWh`} pct={health.healthPct} colorClass="" barColor="linear-gradient(90deg, #00ffa3, #00d4ff)" />
-            <MetricCard icon={<Gauge className="w-5 h-5 text-[var(--color-warn)]" />} label="Wear" value={`${health.wearPct}%`} sub={`${(report.battery.designCapacity - report.battery.fullChargeCapacity).toLocaleString()} mWh lost`} pct={health.wearPct} colorClass="" barColor="linear-gradient(90deg, #ffb830, #ff9500)" />
-            <MetricCard icon={<RefreshCw className="w-5 h-5 text-[var(--color-accent2)]" />} label="Cycles" value={`${report.battery.cycleCount}`} sub={`${health.remainingCycles} remaining`} pct={(report.battery.cycleCount / 500) * 100} colorClass="" barColor="linear-gradient(90deg, #00d4ff, #7c6dff)" />
+            <MetricCard icon={<Battery className="w-5 h-5 text-[var(--color-accent)]" />} label="Health" value={hasCapacityData ? `${health.healthPct}%` : 'N/A'} sub={hasCapacityData ? `${report.battery.fullChargeCapacity.toLocaleString()} mWh` : 'Capacity unavailable'} pct={hasCapacityData ? health.healthPct : 0} colorClass="" barColor="linear-gradient(90deg, #00ffa3, #00d4ff)" />
+            <MetricCard icon={<Gauge className="w-5 h-5 text-[var(--color-warn)]" />} label="Wear" value={hasCapacityData ? `${health.wearPct}%` : 'N/A'} sub={hasCapacityData ? `${(report.battery.designCapacity - report.battery.fullChargeCapacity).toLocaleString()} mWh lost` : 'Capacity unavailable'} pct={hasCapacityData ? health.wearPct : 0} colorClass="" barColor="linear-gradient(90deg, #ffb830, #ff9500)" />
+            <MetricCard icon={<RefreshCw className="w-5 h-5 text-[var(--color-accent2)]" />} label="Cycles" value={hasCapacityData ? `${report.battery.cycleCount}` : 'N/A'} sub={hasCapacityData ? `${health.remainingCycles} remaining` : 'Not confirmed'} pct={hasCapacityData ? (report.battery.cycleCount / 500) * 100 : 0} colorClass="" barColor="linear-gradient(90deg, #00d4ff, #7c6dff)" />
             <MetricCard icon={<Clock className="w-5 h-5 text-[var(--color-accent3)]" />} label="Avg Life" value={health.avgLife > 0 ? `${health.avgLife}h` : 'N/A'} sub={health.avgLife >= 6 ? 'Good' : health.avgLife >= 4 ? 'Fair' : 'Low'} pct={Math.min((health.avgLife / 10) * 100, 100)} colorClass="" barColor="linear-gradient(90deg, #7c6dff, #a855f7)" />
             <MetricCard icon={<Flame className="w-5 h-5 text-[var(--color-danger)]" />} label="Gaming" value={gaming.level} sub={`${gaming.percentage}% impact`} pct={gaming.percentage} colorClass="" barColor="linear-gradient(90deg, #ff4f4f, #ff7c7c)" />
             <MetricCard icon={<CalendarDays className="w-5 h-5 text-[var(--color-accent)]" />} label="Age" value={age.label} sub={health.estimatedLifespan} pct={Math.min((age.months / 36) * 100, 100)} colorClass="" barColor="linear-gradient(90deg, #00ffa3, #00d4ff)" />
@@ -176,7 +197,18 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
           {/* Mini Charts */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>
             {report.capacityHistory.length > 0 && <CapacityChart data={report.capacityHistory} designCapacity={report.battery.designCapacity} height={200} />}
+            {hasCapacityData && <CapacityBreakdownChart designCapacity={report.battery.designCapacity} fullChargeCapacity={report.battery.fullChargeCapacity} height={200} />}
+            {hasCapacityData && report.capacityHistory.length > 0 && <HealthTrendChart data={report.capacityHistory} designCapacity={report.battery.designCapacity} height={200} />}
             {report.lifeEstimates.length > 0 && <BatteryLifeChart data={report.lifeEstimates} height={200} />}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+            {detailStat('Current Capacity', hasCapacityData ? `${(report.battery.fullChargeCapacity / 1000).toFixed(1)} Wh` : 'N/A', 'full charge capacity')}
+            {detailStat('Design Capacity', hasCapacityData ? `${(report.battery.designCapacity / 1000).toFixed(1)} Wh` : 'N/A', 'factory rated capacity')}
+            {detailStat('Capacity Lost', hasCapacityData ? `${(capacityLoss / 1000).toFixed(1)} Wh` : 'N/A', hasCapacityData ? `${health.wearPct}% wear` : 'not available')}
+            {detailStat('Battery Share', `${batteryShare.toFixed(0)}%`, `${batHours.toFixed(1)}h battery / ${acHours.toFixed(1)}h AC`)}
+            {detailStat('Avg Draw', avgDrainRate ? `${(avgDrainRate / 1000).toFixed(1)} W` : 'N/A', 'across drain sessions')}
+            {detailStat('Peak Draw', maxDrainRate ? `${(maxDrainRate / 1000).toFixed(1)} W` : 'N/A', 'highest observed session')}
           </div>
 
           <DeviceInfoCard report={report} />
@@ -245,7 +277,11 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
       {activeTab === 'history' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {report.capacityHistory.length > 0 ? (
-            <CapacityChart data={report.capacityHistory} designCapacity={report.battery.designCapacity} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>
+              <CapacityChart data={report.capacityHistory} designCapacity={report.battery.designCapacity} />
+              {hasCapacityData && <HealthTrendChart data={report.capacityHistory} designCapacity={report.battery.designCapacity} />}
+              {hasCapacityData && <CapacityBreakdownChart designCapacity={report.battery.designCapacity} fullChargeCapacity={report.battery.fullChargeCapacity} />}
+            </div>
           ) : (
             <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--tx3)' }}>No capacity history data available</div>
           )}
@@ -256,7 +292,7 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 12 }}>Degradation Analysis</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 16 }}>
                 {[
-                  { l: 'Total Loss', v: `${(report.battery.designCapacity - report.battery.fullChargeCapacity).toLocaleString()} mWh` },
+                  { l: 'Total Loss', v: `${capacityLoss.toLocaleString()} mWh` },
                   { l: 'Monthly Loss', v: `~${Math.abs(Math.round(health.regression.slope * 0.67))} mWh` },
                   { l: 'Trend R²', v: health.regression.r2.toFixed(3) },
                   { l: 'Remaining Life', v: health.estimatedLifespan },
@@ -269,6 +305,12 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               </div>
             </div>
           )}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+            {detailStat('Best Recorded', bestCapacity ? `${(bestCapacity / 1000).toFixed(1)} Wh` : 'N/A', 'highest history point')}
+            {detailStat('Latest History', latestCapacity ? `${(latestCapacity / 1000).toFixed(1)} Wh` : 'N/A', 'last capacity point')}
+            {detailStat('Trend / Point', trendPerPoint ? `${trendPerPoint.toLocaleString()} mWh` : 'Flat', 'linear regression slope')}
+            {detailStat('History Span', `${report.capacityHistory.length}`, 'capacity records parsed')}
+          </div>
         </div>
       )}
 
@@ -286,6 +328,12 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
             <MetricCard icon={<Clock className="w-5 h-5 text-[var(--color-accent3)]" />} label="Avg Daily" value={`${health.dailyDrainAvg}h`} sub="Battery per day" pct={Math.min((health.dailyDrainAvg / 8) * 100, 100)} colorClass="" barColor="#7c6dff" />
             <MetricCard icon={<Gauge className="w-5 h-5 text-[var(--color-warn)]" />} label="Days Tracked" value={`${report.weeklyUsage.length}`} sub="Usage data points" pct={(report.weeklyUsage.length / 14) * 100} colorClass="" barColor="#ffb830" />
           </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+            {detailStat('Power Source Mix', `${batteryShare.toFixed(0)}%`, 'time spent on battery')}
+            {detailStat('AC Share', `${(100 - batteryShare).toFixed(0)}%`, 'time spent plugged in')}
+            {detailStat('Tracked Hours', `${totalPowerHours.toFixed(1)}h`, 'battery plus AC usage')}
+            {detailStat('Avg Session Draw', avgDrainRate ? `${(avgDrainRate / 1000).toFixed(1)} W` : 'N/A', 'from battery usage table')}
+          </div>
         </div>
       )}
 
@@ -294,7 +342,16 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {report.drainSessions.length > 0 ? (
             <>
-              <DrainChart data={report.drainSessions} />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>
+                <DrainChart data={report.drainSessions} />
+                <DrainRateChart data={report.drainSessions} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12 }}>
+                {detailStat('Sessions', `${report.drainSessions.length}`, 'battery drain entries')}
+                {detailStat('Total Energy', `${(totalEnergyUsed / 1000).toFixed(1)} Wh`, 'across parsed sessions')}
+                {detailStat('Average Draw', `${(avgDrainRate / 1000).toFixed(1)} W`, 'mean session rate')}
+                {detailStat('Peak Draw', `${(maxDrainRate / 1000).toFixed(1)} W`, 'highest observed load')}
+              </div>
               <AdUnit slot="5678901234" format="auto" />
               <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, overflow: 'hidden' }}>
                 <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--bdr)' }}>

@@ -11,7 +11,14 @@ export function generateInsights(report: BatteryReport, health: HealthAnalysis):
   const { cycleCount: cc, designCapacity: dc, fullChargeCapacity: fcc } = report.battery;
 
   // ── Overall Health Assessment ───────────────────────────
-  if (health.score >= 90) {
+  if (dc <= 0 || fcc <= 0) {
+    insights.push({
+      category: 'health', severity: 'warning',
+      title: 'Battery capacity data is incomplete',
+      description: 'The report did not expose both design capacity and full charge capacity, so health percentage, wear, resale impact, and lifespan estimates are unavailable.',
+      action: 'Regenerate the report with powercfg /batteryreport and upload the newest HTML file.',
+    });
+  } else if (health.score >= 90) {
     insights.push({
       category: 'health', severity: 'positive',
       title: 'Battery health is excellent',
