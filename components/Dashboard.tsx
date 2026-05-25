@@ -243,18 +243,18 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
       {/* HISTORY TAB */}
       {activeTab === 'history' && (
-        <div className="space-y-5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {report.capacityHistory.length > 0 ? (
             <CapacityChart data={report.capacityHistory} designCapacity={report.battery.designCapacity} />
           ) : (
-            <div className="text-center py-16 text-[var(--color-text3)]">No capacity history data available</div>
+            <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--tx3)' }}>No capacity history data available</div>
           )}
           {report.lifeEstimates.length > 0 && <BatteryLifeChart data={report.lifeEstimates} />}
           <AdUnit slot="3456789012" format="auto" />
           {report.capacityHistory.length >= 3 && health.regression && (
-            <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-[var(--color-text1)] mb-3">Degradation Analysis</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 20 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 12 }}>Degradation Analysis</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 16 }}>
                 {[
                   { l: 'Total Loss', v: `${(report.battery.designCapacity - report.battery.fullChargeCapacity).toLocaleString()} mWh` },
                   { l: 'Monthly Loss', v: `~${Math.abs(Math.round(health.regression.slope * 0.67))} mWh` },
@@ -262,8 +262,8 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
                   { l: 'Remaining Life', v: health.estimatedLifespan },
                 ].map((m, i) => (
                   <div key={i}>
-                    <div className="text-[11px] text-[var(--color-text3)] uppercase tracking-[1px]">{m.l}</div>
-                    <div className="font-mono text-lg font-bold text-[var(--color-text1)]">{m.v}</div>
+                    <div style={{ fontSize: 11, color: 'var(--tx3)', textTransform: 'uppercase', letterSpacing: 1 }}>{m.l}</div>
+                    <div className="font-mono" style={{ fontSize: 18, fontWeight: 700, color: 'var(--tx1)' }}>{m.v}</div>
                   </div>
                 ))}
               </div>
@@ -274,13 +274,13 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
       {/* USAGE TAB */}
       {activeTab === 'usage' && (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }}>
             {report.weeklyUsage.length > 0 && <UsageChart data={report.weeklyUsage} />}
             <DonutChart batteryHours={batHours} acHours={acHours} />
           </div>
           <AdUnit slot="4567890123" format="auto" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
             <MetricCard icon={<Battery className="w-5 h-5 text-[var(--color-accent)]" />} label="Battery Time" value={`${batHours.toFixed(1)}h`} sub="Total on battery" pct={(batHours / Math.max(batHours + acHours, 1)) * 100} colorClass="" barColor="#00ffa3" />
             <MetricCard icon={<Upload className="w-5 h-5 text-[var(--color-accent2)]" />} label="AC Time" value={`${acHours.toFixed(1)}h`} sub="Total on AC" pct={(acHours / Math.max(batHours + acHours, 1)) * 100} colorClass="" barColor="#00d4ff" />
             <MetricCard icon={<Clock className="w-5 h-5 text-[var(--color-accent3)]" />} label="Avg Daily" value={`${health.dailyDrainAvg}h`} sub="Battery per day" pct={Math.min((health.dailyDrainAvg / 8) * 100, 100)} colorClass="" barColor="#7c6dff" />
@@ -291,47 +291,41 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
       {/* SESSIONS TAB */}
       {activeTab === 'sessions' && (
-        <div className="space-y-5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {report.drainSessions.length > 0 ? (
             <>
               <DrainChart data={report.drainSessions} />
               <AdUnit slot="5678901234" format="auto" />
-              {/* Sessions Table */}
-              <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-                <div className="py-3 px-5 border-b border-[var(--color-border)]">
-                  <h3 className="text-sm font-semibold text-[var(--color-text1)]">Drain Session Details</h3>
+              <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, overflow: 'hidden' }}>
+                <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--bdr)' }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)' }}>Drain Session Details</h3>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr className="bg-[var(--color-bg3)] text-[var(--color-text3)] uppercase tracking-wider">
-                        <th className="py-2.5 px-4 text-left font-medium">Date</th>
-                        <th className="py-2.5 px-4 text-left font-medium">Duration</th>
-                        <th className="py-2.5 px-4 text-left font-medium">Drain</th>
-                        <th className="py-2.5 px-4 text-left font-medium">Energy</th>
-                        <th className="py-2.5 px-4 text-left font-medium">Rate</th>
-                        <th className="py-2.5 px-4 text-left font-medium">Load</th>
+                      <tr style={{ background: 'var(--bg3)', color: 'var(--tx3)', textTransform: 'uppercase', letterSpacing: 1 }}>
+                        {['Date','Duration','Drain','Energy','Rate','Load'].map(h => (
+                          <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 500 }}>{h}</th>
+                        ))}
                       </tr>
                     </thead>
                     <tbody>
                       {report.drainSessions.map((s, i) => (
-                        <tr key={i} className="border-t border-[var(--color-border)] hover:bg-[var(--color-bg3)] transition-colors">
-                          <td className="py-2.5 px-4 font-mono text-[var(--color-text1)]">{s.date.slice(0, 16)}</td>
-                          <td className="py-2.5 px-4 text-[var(--color-text2)]">{s.dur}</td>
-                          <td className="py-2.5 px-4">
-                            <div className="flex items-center gap-2">
-                              <div className="w-16 h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
-                                <div className="h-full rounded-full" style={{ width: `${Math.min(s.drain, 100)}%`, background: s.drain > 40 ? '#ff4f4f' : s.drain > 25 ? '#ffb830' : '#00ffa3' }} />
+                        <tr key={i} style={{ borderTop: '1px solid var(--bdr)' }}>
+                          <td className="font-mono" style={{ padding: '10px 16px', color: 'var(--tx1)' }}>{s.date.slice(0, 16)}</td>
+                          <td style={{ padding: '10px 16px', color: 'var(--tx2)' }}>{s.dur}</td>
+                          <td style={{ padding: '10px 16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ width: 64, height: 6, background: 'var(--bdr)', borderRadius: 3, overflow: 'hidden' }}>
+                                <div style={{ height: '100%', borderRadius: 3, width: `${Math.min(s.drain, 100)}%`, background: s.drain > 40 ? '#ff4f4f' : s.drain > 25 ? '#ffb830' : '#00ffa3' }} />
                               </div>
-                              <span className="font-mono text-[var(--color-text1)]">{s.drain}%</span>
+                              <span className="font-mono" style={{ color: 'var(--tx1)' }}>{s.drain}%</span>
                             </div>
                           </td>
-                          <td className="py-2.5 px-4 font-mono text-[var(--color-text2)]">{s.mwh} mWh</td>
-                          <td className="py-2.5 px-4 font-mono text-[var(--color-text2)]">{s.rate} mWh/h</td>
-                          <td className="py-2.5 px-4">
-                            <span className={`py-0.5 px-2 rounded-full text-[11px] font-medium ${
-                              s.drain > 40 ? 'pill-bad' : s.drain > 25 ? 'pill-warn' : 'pill-good'
-                            }`}>
+                          <td className="font-mono" style={{ padding: '10px 16px', color: 'var(--tx2)' }}>{s.mwh} mWh</td>
+                          <td className="font-mono" style={{ padding: '10px 16px', color: 'var(--tx2)' }}>{s.rate} mWh/h</td>
+                          <td style={{ padding: '10px 16px' }}>
+                            <span className={s.drain > 40 ? 'pill-bad' : s.drain > 25 ? 'pill-warn' : 'pill-good'} style={{ padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 500 }}>
                               {s.drain > 40 ? 'Heavy' : s.drain > 25 ? 'Moderate' : 'Light'}
                             </span>
                           </td>
@@ -343,14 +337,14 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               </div>
             </>
           ) : (
-            <div className="text-center py-16 text-[var(--color-text3)]">No drain session data available</div>
+            <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--tx3)' }}>No drain session data available</div>
           )}
         </div>
       )}
 
       {/* COMPARE TAB */}
       {activeTab === 'compare' && (
-        <div className="space-y-5">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {reports.length >= 2 ? (
             <>
               <CompareChart reports={reports} />
@@ -358,10 +352,10 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               <AdUnit slot="6789012345" format="auto" />
             </>
           ) : (
-            <div className="text-center py-16">
-              <p className="text-[var(--color-text3)] mb-4">Upload multiple reports to compare</p>
-              <button onClick={() => fileRef.current?.click()} className="py-2.5 px-6 rounded-[10px] text-[13px] font-semibold bg-[var(--color-accent)] text-black hover:brightness-110 transition-all flex items-center gap-1.5 mx-auto cursor-pointer">
-                <Plus className="w-4 h-4" /> Add another report
+            <div style={{ textAlign: 'center', padding: '64px 0' }}>
+              <p style={{ color: 'var(--tx3)', marginBottom: 16 }}>Upload multiple reports to compare</p>
+              <button onClick={() => fileRef.current?.click()} style={{ padding: '10px 24px', borderRadius: 10, fontSize: 13, fontWeight: 600, background: 'var(--acc)', color: '#000', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, margin: '0 auto' }}>
+                <Plus style={{ width: 16, height: 16 }} /> Add another report
               </button>
             </div>
           )}
@@ -370,13 +364,12 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
       {/* TIPS TAB */}
       {activeTab === 'tips' && (
-        <div className="space-y-5">
-          {/* All insights */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {insights.length > 0 && (
-            <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
-              <div className="py-3 px-5 border-b border-[var(--color-border)]">
-                <h3 className="text-sm font-semibold text-[var(--color-text1)] flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-[var(--color-accent)]" /> All Insights & Recommendations
+            <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, overflow: 'hidden' }}>
+              <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--bdr)' }}>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Zap style={{ width: 16, height: 16, color: 'var(--acc)' }} /> All Insights & Recommendations
                 </h3>
               </div>
               {insights.map((ins, i) => <InsightCard key={i} insight={ins} />)}

@@ -9,7 +9,7 @@ const COLORS = ['#00ffa3', '#00d4ff'];
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number; payload: { fill: string } }> }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#131920] border border-[#1e2d3d] rounded-lg py-2 px-3 text-xs shadow-xl">
+    <div style={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
       <p style={{ color: payload[0].payload.fill }} className="font-mono">{payload[0].name}: {payload[0].value.toFixed(1)}h</p>
     </div>
   );
@@ -24,13 +24,11 @@ export default function DonutChart({ batteryHours, acHours, height = 220 }: Prop
   ];
 
   return (
-    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
-          <Plug className="w-4 h-4 text-[var(--color-accent2)]" /> Power Source Split
-        </div>
+    <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 16 }}>
+        <Plug style={{ width: 16, height: 16, color: 'var(--acc2)' }} /> Power Source Split
       </div>
-      <div className="relative">
+      <div style={{ position: 'relative' }}>
         <ResponsiveContainer width="100%" height={height}>
           <PieChart>
             <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={3} dataKey="value" stroke="none">
@@ -39,15 +37,15 @@ export default function DonutChart({ batteryHours, acHours, height = 220 }: Prop
             <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="font-mono text-2xl font-bold text-[var(--color-text1)]">{batPct}%</span>
-          <span className="text-[11px] text-[var(--color-text3)]">on battery</span>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+          <span className="font-mono" style={{ fontSize: 24, fontWeight: 700, color: 'var(--tx1)' }}>{batPct}%</span>
+          <span style={{ fontSize: 11, color: 'var(--tx3)' }}>on battery</span>
         </div>
       </div>
-      <div className="flex justify-center gap-6 mt-3">
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 12 }}>
         {data.map((d, i) => (
-          <div key={i} className="flex items-center gap-2 text-xs text-[var(--color-text2)]">
-            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: COLORS[i] }} />
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--tx2)' }}>
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: COLORS[i] }} />
             {d.name} ({d.value.toFixed(1)}h)
           </div>
         ))}

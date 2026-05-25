@@ -11,33 +11,23 @@ interface Props { reports: BatteryReport[]; height?: number; }
 export default function CompareChart({ reports, height = 260 }: Props) {
   const data = reports.map((r, i) => {
     const h = computeHealth(r);
-    return {
-      name: r.filename.slice(0, 20),
-      score: h.score,
-      wear: h.wearPct,
-      cycles: r.battery.cycleCount,
-      color: COLORS[i % COLORS.length],
-    };
+    return { name: r.filename.slice(0, 20), score: h.score, wear: h.wearPct, cycles: r.battery.cycleCount, color: COLORS[i % COLORS.length] };
   });
 
   return (
-    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
-          <GitCompareArrows className="w-4 h-4 text-[var(--color-accent3)]" /> Report Comparison
+    <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: 'var(--tx1)' }}>
+          <GitCompareArrows style={{ width: 16, height: 16, color: 'var(--acc3)' }} /> Report Comparison
         </div>
-        <span className="text-xs text-[var(--color-text3)]">{reports.length} reports</span>
+        <span style={{ fontSize: 12, color: 'var(--tx3)' }}>{reports.length} reports</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#536070' }} axisLine={false} tickLine={false} />
           <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#536070' }} axisLine={false} tickLine={false} />
-          <Tooltip
-            contentStyle={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, fontSize: 12 }}
-            labelStyle={{ color: '#8899aa' }}
-            itemStyle={{ color: '#e8f0fe' }}
-          />
+          <Tooltip contentStyle={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, fontSize: 12 }} labelStyle={{ color: '#8899aa' }} itemStyle={{ color: '#e8f0fe' }} />
           <Bar dataKey="score" name="Health Score" radius={[6, 6, 0, 0]} maxBarSize={48}>
             {data.map((d, i) => <Cell key={i} fill={d.color} fillOpacity={0.8} />)}
           </Bar>

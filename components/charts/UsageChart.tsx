@@ -8,8 +8,8 @@ interface Props { data: UsageEntry[]; height?: number; }
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string; color: string }>; label?: string }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#131920] border border-[#1e2d3d] rounded-lg py-2 px-3 text-xs shadow-xl">
-      <p className="text-[#8899aa] mb-1">{label}</p>
+    <div style={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+      <p style={{ color: '#8899aa', marginBottom: 4 }}>{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }} className="font-mono">{p.name}: {p.value.toFixed(1)}h</p>
       ))}
@@ -19,12 +19,12 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 export default function UsageChart({ data, height = 260 }: Props) {
   return (
-    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
-          <BarChart3 className="w-4 h-4 text-[var(--color-accent3)]" /> Usage Patterns
+    <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: 'var(--tx1)' }}>
+          <BarChart3 style={{ width: 16, height: 16, color: 'var(--acc3)' }} /> Usage Patterns
         </div>
-        <span className="text-xs text-[var(--color-text3)]">{data.length} days</span>
+        <span style={{ fontSize: 12, color: 'var(--tx3)' }}>{data.length} days</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
