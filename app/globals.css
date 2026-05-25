@@ -2,49 +2,71 @@
 
 /* ══════════════════════════════════════════════════════════════
    BatteryIQ — Design System
-   Tailwind v4 + CSS custom properties for dark/light theming
+   Tailwind v4 with @theme inline for runtime dark/light toggle
 ══════════════════════════════════════════════════════════════ */
 
-/* ── Theme Tokens ────────────────────────────────────── */
+/* ── Font Registration (static, no override needed) ──── */
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-syne: 'Syne', 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
 
-  --color-bg0: #080c12;
-  --color-bg1: #0d1117;
-  --color-bg2: #131920;
-  --color-bg3: #1a2230;
-  --color-border: #1e2d3d;
-  --color-border2: #2a3f56;
-  --color-text1: #e8f0fe;
-  --color-text2: #8899aa;
-  --color-text3: #536070;
-  --color-accent: #00ffa3;
-  --color-accent2: #00d4ff;
-  --color-accent3: #7c6dff;
-  --color-warn: #ffb830;
-  --color-danger: #ff4f4f;
-  --color-good: #00ffa3;
+/* ── Color Registration (inline → references runtime vars) */
+@theme inline {
+  --color-bg0: var(--bg0);
+  --color-bg1: var(--bg1);
+  --color-bg2: var(--bg2);
+  --color-bg3: var(--bg3);
+  --color-border: var(--bdr);
+  --color-border2: var(--bdr2);
+  --color-text1: var(--tx1);
+  --color-text2: var(--tx2);
+  --color-text3: var(--tx3);
+  --color-accent: var(--acc);
+  --color-accent2: var(--acc2);
+  --color-accent3: var(--acc3);
+  --color-warn: var(--wrn);
+  --color-danger: var(--dng);
+  --color-good: var(--gd);
+}
+
+/* ── Runtime Color Tokens (Dark Mode = default) ──────── */
+:root {
+  --bg0: #080c12;
+  --bg1: #0d1117;
+  --bg2: #131920;
+  --bg3: #1a2230;
+  --bdr: #1e2d3d;
+  --bdr2: #2a3f56;
+  --tx1: #e8f0fe;
+  --tx2: #8899aa;
+  --tx3: #536070;
+  --acc: #00ffa3;
+  --acc2: #00d4ff;
+  --acc3: #7c6dff;
+  --wrn: #ffb830;
+  --dng: #ff4f4f;
+  --gd: #00ffa3;
 }
 
 /* ── Light Mode Overrides ────────────────────────────── */
 .light {
-  --color-bg0: #f0f4fa;
-  --color-bg1: #f7f9fd;
-  --color-bg2: #ffffff;
-  --color-bg3: #eef2f9;
-  --color-border: #dce3ee;
-  --color-border2: #c5d0e0;
-  --color-text1: #0d1117;
-  --color-text2: #4a5568;
-  --color-text3: #8899aa;
-  --color-accent: #008f5d;
-  --color-accent2: #0070b8;
-  --color-accent3: #5b4fcf;
-  --color-warn: #b87800;
-  --color-danger: #c0392b;
-  --color-good: #008f5d;
+  --bg0: #f0f4fa;
+  --bg1: #f7f9fd;
+  --bg2: #ffffff;
+  --bg3: #eef2f9;
+  --bdr: #dce3ee;
+  --bdr2: #c5d0e0;
+  --tx1: #0d1117;
+  --tx2: #4a5568;
+  --tx3: #8899aa;
+  --acc: #008f5d;
+  --acc2: #0070b8;
+  --acc3: #5b4fcf;
+  --wrn: #b87800;
+  --dng: #c0392b;
+  --gd: #008f5d;
 }
 
 /* ── Base Styles ──────────────────────────────────────── */
@@ -65,8 +87,8 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background: var(--color-bg0);
-  color: var(--color-text1);
+  background: var(--bg0);
+  color: var(--tx1);
   line-height: 1.6;
   min-height: 100vh;
   transition: background 0.3s ease, color 0.3s ease;
@@ -79,9 +101,8 @@ body {
   background: rgba(13, 17, 23, 0.6);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--bdr);
 }
-
 .light .glass {
   background: rgba(255, 255, 255, 0.7);
 }
@@ -95,52 +116,45 @@ body {
 }
 
 /* ── Score Gradients ──────────────────────────────────── */
-.score-gradient-green { stroke: var(--color-accent); }
-.score-gradient-yellow { stroke: var(--color-warn); }
+.score-gradient-green { stroke: var(--acc); }
+.score-gradient-yellow { stroke: var(--wrn); }
 .score-gradient-orange { stroke: #ff9500; }
-.score-gradient-red { stroke: var(--color-danger); }
+.score-gradient-red { stroke: var(--dng); }
 
 /* ── Pill Badges ──────────────────────────────────────── */
-.pill-good { background: rgba(0, 255, 163, 0.1); color: var(--color-accent); border: 1px solid rgba(0, 255, 163, 0.2); }
-.pill-warn { background: rgba(255, 184, 48, 0.1); color: var(--color-warn); border: 1px solid rgba(255, 184, 48, 0.2); }
-.pill-bad { background: rgba(255, 79, 79, 0.1); color: var(--color-danger); border: 1px solid rgba(255, 79, 79, 0.2); }
-.pill-info { background: rgba(0, 212, 255, 0.1); color: var(--color-accent2); border: 1px solid rgba(0, 212, 255, 0.2); }
+.pill-good { background: rgba(0, 255, 163, 0.1); color: var(--acc); border: 1px solid rgba(0, 255, 163, 0.2); }
+.pill-warn { background: rgba(255, 184, 48, 0.1); color: var(--wrn); border: 1px solid rgba(255, 184, 48, 0.2); }
+.pill-bad { background: rgba(255, 79, 79, 0.1); color: var(--dng); border: 1px solid rgba(255, 79, 79, 0.2); }
+.pill-info { background: rgba(0, 212, 255, 0.1); color: var(--acc2); border: 1px solid rgba(0, 212, 255, 0.2); }
 
 /* ── Animations ───────────────────────────────────────── */
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
 }
-
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 163, 0.4); }
   50% { box-shadow: 0 0 16px 4px rgba(0, 255, 163, 0.15); }
 }
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
 .animate-blink { animation: blink 2s infinite; }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 
 /* ── Scrollbar ────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--color-bg0); }
-::-webkit-scrollbar-thumb { background: var(--color-border2); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-text3); }
+::-webkit-scrollbar-track { background: var(--bg0); }
+::-webkit-scrollbar-thumb { background: var(--bdr2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--tx3); }
 
 /* ── Selection ────────────────────────────────────────── */
 ::selection {
   background: rgba(0, 255, 163, 0.2);
-  color: var(--color-text1);
+  color: var(--tx1);
 }
 
 /* ── Recharts ─────────────────────────────────────────── */
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line {
-  stroke: var(--color-border);
+  stroke: var(--bdr);
   stroke-opacity: 0.5;
 }
 .recharts-tooltip-wrapper { outline: none !important; }
@@ -153,7 +167,7 @@ body {
 
 /* ── Text Gradient ────────────────────────────────────── */
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent2));
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -179,7 +193,7 @@ body {
   min-height: 90px;
   border-radius: 16px;
   overflow: hidden;
-  background: var(--color-bg2);
-  border: 1px solid var(--color-border);
+  background: var(--bg2);
+  border: 1px solid var(--bdr);
 }
 .ad-container ins { display: block; width: 100%; }
