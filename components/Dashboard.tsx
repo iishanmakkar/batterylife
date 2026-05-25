@@ -85,13 +85,13 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
       id="dashboard-root"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="max-w-5xl mx-auto px-4 pb-16"
+      className="max-w-5xl mx-auto px-6 pb-16"
     >
       <input ref={fileRef} type="file" accept=".html,.htm" multiple className="hidden" onChange={handleAddFile} />
 
       {/* ── Tab Navigation ─────────────────────────────────────── */}
-      <div className="sticky top-[60px] z-40 bg-[var(--color-bg0)]/90 backdrop-blur-lg border-b border-[var(--color-border)] mb-6 -mx-4 px-4">
-        <div className="flex items-center gap-0.5 overflow-x-auto py-1 scrollbar-none">
+      <div className="sticky top-[64px] z-40 bg-[var(--color-bg0)]/90 backdrop-blur-lg border-b border-[var(--color-border)] mb-6 -mx-6 px-6">
+        <div className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-none">
           {tabs.map(t => (
             <button
               key={t.id}

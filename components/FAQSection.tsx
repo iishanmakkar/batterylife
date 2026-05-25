@@ -1,37 +1,59 @@
 'use client';
+
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
 
 const faqs = [
-  { q: 'What is battery health?', a: 'Battery health is the ratio of your battery\'s current full charge capacity to its original design capacity. A new battery starts at 100% and gradually degrades over time through normal use.' },
-  { q: 'How do I generate a battery report?', a: 'Open PowerShell or Command Prompt as Administrator and run: powercfg /batteryreport. This creates an HTML file at C:\\Windows\\System32\\battery-report.html (or the path you specify).' },
-  { q: 'When should I replace my battery?', a: 'Consider replacement when health drops below 60%, runtime becomes too short for your needs, or the battery is swelling. Most batteries last 300-500 charge cycles.' },
-  { q: 'What is battery wear level?', a: 'Wear level is the percentage of original capacity that has been permanently lost. A 15% wear level means your battery can only charge to 85% of its original capacity.' },
-  { q: 'Is my data safe?', a: 'Absolutely. BatteryIQ processes everything locally in your browser. Your battery report never leaves your device — no servers, no uploads, no tracking.' },
-  { q: 'How accurate is the analysis?', a: 'The analysis is based on data directly from Windows\' power management system. The health score, wear level, and capacity data are as accurate as Windows reports them. Our insights and predictions use statistical analysis of this data.' },
-  { q: 'What affects battery lifespan?', a: 'Heat, deep discharges (below 20%), keeping the battery at 100% constantly, high cycle counts, and intensive workloads all contribute to faster degradation.' },
-  { q: 'Can I compare multiple reports?', a: 'Yes! Upload multiple battery-report.html files to compare different devices or track the same device over time. Use the Compare tab to see side-by-side analysis.' },
+  { q: 'What is battery health?', a: 'Battery health is the ratio of your battery\'s current full charge capacity to its original design capacity. A new battery starts at 100% and gradually degrades over time through normal use. For example, a battery with 45,000 mWh full charge vs 50,000 mWh design capacity has 90% health.' },
+  { q: 'How do I generate a battery report?', a: 'Open PowerShell or Command Prompt as Administrator and run: powercfg /batteryreport /output "%USERPROFILE%\\battery-report.html". This creates an HTML file in your user folder. Then upload that file here for analysis.' },
+  { q: 'When should I replace my battery?', a: 'Consider replacement when health drops below 60%, runtime becomes too short for your daily needs, or the battery is physically swelling. Most lithium-ion batteries last 300-500 full charge cycles before significant degradation.' },
+  { q: 'What is battery wear level?', a: 'Wear level is the percentage of original capacity that has been permanently lost due to chemical aging. A 15% wear level means your battery can only charge to 85% of its original capacity, regardless of what the OS reports as "100%".' },
+  { q: 'Is my data safe?', a: 'Absolutely. BatteryIQ processes everything locally in your browser using JavaScript. Your battery report file never leaves your device — there are no server uploads, no databases, no cookies, and no tracking whatsoever.' },
+  { q: 'How accurate is the analysis?', a: 'The analysis uses data directly from Windows\' power management system (the same data Microsoft uses). The health score, wear level, and capacity data are highly accurate. Our AI insights and degradation predictions use statistical regression analysis on this data.' },
+  { q: 'What affects battery lifespan?', a: 'The main factors are: heat exposure, deep discharges (below 20%), keeping the battery at 100% constantly, high cycle counts, rapid charging, and running intensive workloads on battery power. Keeping charge between 20-80% is the single best practice.' },
+  { q: 'Can I compare multiple reports?', a: 'Yes! Upload multiple battery-report.html files to compare different devices side-by-side, or track the same device over time by uploading older reports. Use the Compare tab in the dashboard to see detailed comparisons.' },
 ];
 
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="max-w-[760px] mx-auto px-4 py-16">
-      <h2 className="font-[family-name:var(--font-syne)] text-2xl font-extrabold text-center mb-8 text-[var(--color-text1)]">
-        Frequently Asked Questions
-      </h2>
-      <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl overflow-hidden">
+    <section className="max-w-4xl mx-auto px-6 py-20">
+      {/* Section Header */}
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center gap-2 text-[11px] tracking-[2px] text-[var(--color-accent2)] uppercase font-semibold bg-[rgba(0,212,255,0.08)] border border-[rgba(0,212,255,0.2)] py-1 px-3 rounded-full mb-4">
+          <HelpCircle className="w-3 h-3" /> FAQ
+        </div>
+        <h2 className="font-[family-name:var(--font-syne)] text-3xl sm:text-4xl font-extrabold text-[var(--color-text1)] tracking-tight">
+          Frequently Asked Questions
+        </h2>
+        <p className="text-[var(--color-text2)] text-sm mt-3 max-w-lg mx-auto">
+          Everything you need to know about battery health analysis
+        </p>
+      </div>
+
+      {/* FAQ Accordion */}
+      <div className="space-y-3">
         {faqs.map((faq, i) => (
-          <div key={i} className="border-b border-[var(--color-border)] last:border-b-0">
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl overflow-hidden hover:border-[var(--color-border2)] transition-colors"
+          >
             <button
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="w-full flex items-center justify-between py-4 px-5 text-left text-sm font-semibold text-[var(--color-text1)] hover:bg-[var(--color-bg3)] transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between py-5 px-6 text-left cursor-pointer bg-transparent border-none"
             >
-              {faq.q}
-              <motion.div animate={{ rotate: openIndex === i ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="w-4 h-4 text-[var(--color-text3)] shrink-0" />
+              <span className="text-[15px] font-semibold text-[var(--color-text1)] pr-4">{faq.q}</span>
+              <motion.div
+                animate={{ rotate: openIndex === i ? 180 : 0 }}
+                transition={{ duration: 0.25 }}
+                className="shrink-0"
+              >
+                <ChevronDown className="w-5 h-5 text-[var(--color-text3)]" />
               </motion.div>
             </button>
             <AnimatePresence>
@@ -40,14 +62,16 @@ export default function FAQSection() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
+                  transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                   className="overflow-hidden"
                 >
-                  <p className="px-5 pb-4 text-xs text-[var(--color-text2)] leading-relaxed">{faq.a}</p>
+                  <div className="px-6 pb-5 border-t border-[var(--color-border)]">
+                    <p className="text-sm text-[var(--color-text2)] leading-relaxed pt-4">{faq.a}</p>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

@@ -123,37 +123,39 @@ function AppContent() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[var(--color-bg0)]">
       <Navbar reportCount={reports.length} />
 
       <main className="flex-1">
+        {/* Hero always visible */}
         <HeroSection analyzedCount={analyzedCount} />
 
+        {/* Upload zone only when no dashboard */}
         {!showDashboard && (
           <>
             <UploadZone onReportParsed={handleReportParsed} onDemo={handleDemo} />
-            <AdUnit slot="8901234567" format="horizontal" className="max-w-[760px] mx-auto px-4 mb-8" />
+            <AdUnit slot="8901234567" format="horizontal" className="max-w-4xl mx-auto px-6 mb-12" />
           </>
         )}
 
+        {/* Dashboard */}
         {showDashboard && reports.length > 0 && (
-          <>
-            {/* Upload zone above dashboard */}
-            <div className="max-w-5xl mx-auto px-4 mb-6">
-              <UploadZone onReportParsed={handleReportParsed} onDemo={handleDemo} />
-            </div>
-            <Dashboard
-              reports={reports}
-              onAddReport={handleAddReport}
-              onRemoveReport={handleRemoveReport}
-              onClose={handleClose}
-            />
-          </>
+          <Dashboard
+            reports={reports}
+            onAddReport={handleAddReport}
+            onRemoveReport={handleRemoveReport}
+            onClose={handleClose}
+          />
         )}
 
-        <AdUnit slot="9012345678" format="horizontal" className="max-w-[760px] mx-auto px-4" />
+        {/* Divider */}
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="h-px bg-gradient-to-r from-transparent via-[var(--color-border)] to-transparent" />
+        </div>
+
+        <AdUnit slot="9012345678" format="horizontal" className="max-w-4xl mx-auto px-6 mt-8" />
         <FAQSection />
-        <AdUnit slot="0123456789" format="horizontal" className="max-w-[760px] mx-auto px-4 mb-8" />
+        <AdUnit slot="0123456789" format="horizontal" className="max-w-4xl mx-auto px-6 mb-12" />
       </main>
 
       <Footer />

@@ -216,13 +216,22 @@ body {
   .hide-mobile { display: none !important; }
 }
 
+/* ── Scrollbar None ──────────────────────────────────── */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Ad Container ─────────────────────────────────────── */
 .ad-container {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 90px;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
   background: var(--color-bg2);
   border: 1px solid var(--color-border);
@@ -232,3 +241,14 @@ body {
   display: block;
   width: 100%;
 }
+
+/* ── Smooth hover transitions for cards ──────────────── */
+.card-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-hover:hover {
+  border-color: var(--color-border2);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
