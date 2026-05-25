@@ -21,12 +21,12 @@ export default function CompareChart({ reports, height = 260 }: Props) {
   });
 
   return (
-    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
+    <div className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
-          <GitCompareArrows className="w-4 h-4 text-[var(--color-accent3)]" /> Report Comparison
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text1)]">
+          <GitCompareArrows className="w-4 h-4 text-[var(--accent3)]" /> Report Comparison
         </div>
-        <span className="text-xs text-[var(--color-text3)]">{reports.length} reports</span>
+        <span className="text-xs text-[var(--text3)]">{reports.length} reports</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>

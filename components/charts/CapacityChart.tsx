@@ -10,19 +10,19 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   return (
     <div className="bg-[#131920] border border-[#1e2d3d] rounded-lg py-2 px-3 text-xs shadow-xl">
       <p className="text-[#8899aa] mb-1">{label}</p>
-      <p className="font-[family-name:var(--font-mono)] text-[#e8f0fe] font-semibold">{(payload[0].value / 1000).toFixed(1)} Wh</p>
+      <p className="font-mono text-[#e8f0fe] font-semibold">{(payload[0].value / 1000).toFixed(1)} Wh</p>
     </div>
   );
 };
 
 export default function CapacityChart({ data, designCapacity, height = 260 }: Props) {
   return (
-    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
+    <div className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
-          <TrendingDown className="w-4 h-4 text-[var(--color-accent)]" /> Capacity Over Time
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text1)]">
+          <TrendingDown className="w-4 h-4 text-[var(--accent)]" /> Capacity Over Time
         </div>
-        <span className="text-xs text-[var(--color-text3)]">{data.length} data points</span>
+        <span className="text-xs text-[var(--text3)]">{data.length} data points</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>

@@ -11,7 +11,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
     <div className="bg-[#131920] border border-[#1e2d3d] rounded-lg py-2 px-3 text-xs shadow-xl">
       <p className="text-[#8899aa] mb-1">{label}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color }} className="font-[family-name:var(--font-mono)]">{p.name}: {p.value.toFixed(1)}h</p>
+        <p key={i} style={{ color: p.color }} className="font-mono">{p.name}: {p.value.toFixed(1)}h</p>
       ))}
     </div>
   );
@@ -19,12 +19,12 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 export default function UsageChart({ data, height = 260 }: Props) {
   return (
-    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
+    <div className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
-          <BarChart3 className="w-4 h-4 text-[var(--color-accent3)]" /> Usage Patterns
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text1)]">
+          <BarChart3 className="w-4 h-4 text-[var(--accent3)]" /> Usage Patterns
         </div>
-        <span className="text-xs text-[var(--color-text3)]">{data.length} days</span>
+        <span className="text-xs text-[var(--text3)]">{data.length} days</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>

@@ -123,7 +123,7 @@ function AppContent() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-bg0)]">
+    <div className="min-h-screen flex flex-col bg-[var(--bg0)]">
       <Navbar reportCount={reports.length} />
 
       <main className="flex-1">
@@ -150,7 +150,7 @@ function AppContent() {
 
         {/* Divider */}
         <div className="max-w-4xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[var(--color-border)] to-transparent" />
+          <div className="h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
         </div>
 
         <AdUnit slot="9012345678" format="horizontal" className="max-w-4xl mx-auto px-6 mt-8" />

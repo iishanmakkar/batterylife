@@ -40,12 +40,12 @@ export default function ExportModal({ isOpen, onClose, report, health, reports }
         >
           <motion.div
             initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-            className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-6 w-full max-w-[380px] shadow-2xl"
+            className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-6 w-full max-w-[380px] shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-[family-name:var(--font-syne)] font-bold text-lg text-[var(--color-text1)]">Export Report</h3>
-              <button onClick={onClose} className="w-8 h-8 rounded-lg bg-[var(--color-bg3)] flex items-center justify-center text-[var(--color-text3)] hover:text-[var(--color-text1)] transition-colors cursor-pointer"><X className="w-4 h-4" /></button>
+              <h3 className="font-syne font-bold text-lg text-[var(--text1)]">Export Report</h3>
+              <button onClick={onClose} className="w-8 h-8 rounded-lg bg-[var(--bg3)] flex items-center justify-center text-[var(--text3)] hover:text-[var(--text1)] transition-colors cursor-pointer"><X className="w-4 h-4" /></button>
             </div>
             <div className="space-y-2.5">
               {opts.map(o => (
@@ -53,14 +53,14 @@ export default function ExportModal({ isOpen, onClose, report, health, reports }
                   key={o.id}
                   onClick={o.handler}
                   disabled={loading !== null}
-                  className="w-full flex items-center gap-3.5 py-3.5 px-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg3)] hover:border-[var(--color-accent)] transition-all text-left cursor-pointer disabled:opacity-50"
+                  className="w-full flex items-center gap-3.5 py-3.5 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg3)] hover:border-[var(--accent)] transition-all text-left cursor-pointer disabled:opacity-50"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(0,255,163,0.1)] flex items-center justify-center text-[var(--color-accent)] shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-[rgba(0,255,163,0.1)] flex items-center justify-center text-[var(--accent)] shrink-0">
                     {loading === o.id ? <Loader2 className="w-5 h-5 animate-spin" /> : o.icon}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-[var(--color-text1)]">{o.title}</div>
-                    <div className="text-xs text-[var(--color-text3)]">{o.desc}</div>
+                    <div className="text-sm font-semibold text-[var(--text1)]">{o.title}</div>
+                    <div className="text-xs text-[var(--text3)]">{o.desc}</div>
                   </div>
                 </button>
               ))}
