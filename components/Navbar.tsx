@@ -1,38 +1,72 @@
 'use client';
 
-import { Sun, Moon, Zap } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
 export default function Navbar({ reportCount }: { reportCount?: number }) {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <nav className="sticky top-0 z-50 h-[64px] flex items-center justify-between px-6 border-b border-[var(--color-border)] bg-[var(--color-bg0)]/80 backdrop-blur-xl">
-      {/* Logo */}
-      <a href="#" className="flex items-center gap-2.5 no-underline group" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-        <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent2)] flex items-center justify-center shadow-[0_2px_12px_rgba(0,255,163,0.25)] group-hover:shadow-[0_2px_20px_rgba(0,255,163,0.4)] transition-shadow">
-          <Zap className="w-[18px] h-[18px] text-black" fill="black" />
-        </div>
-        <span className="font-syne font-extrabold text-xl tracking-tight text-[var(--color-text1)]">
-          Battery<span className="text-[var(--color-accent)]">IQ</span>
-        </span>
-      </a>
-
-      {/* Right side */}
-      <div className="flex items-center gap-3">
-        {reportCount !== undefined && reportCount > 0 && (
-          <span className="text-[11px] py-1 px-3 rounded-full bg-[rgba(0,255,163,0.1)] text-[var(--color-accent)] border border-[rgba(0,255,163,0.2)] font-semibold tracking-wide hidden sm:inline-flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)]" />
-            {reportCount} report{reportCount !== 1 ? 's' : ''} loaded
+    <nav
+      className="sticky top-0 z-50 w-full backdrop-blur-xl"
+      style={{
+        height: 64,
+        background: 'rgba(8,12,18,0.8)',
+        borderBottom: '1px solid var(--bdr)',
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: 'linear-gradient(135deg, #00ffa3, #00d4ff)',
+              fontSize: 16,
+            }}
+          >
+            ⚡
+          </div>
+          <span className="font-syne font-bold" style={{ fontSize: 20, color: 'var(--tx1)', letterSpacing: '-0.5px' }}>
+            Battery<span style={{ color: 'var(--acc)' }}>IQ</span>
           </span>
-        )}
-        <button
-          onClick={toggleTheme}
-          className="w-9 h-9 rounded-[10px] border border-[var(--color-border2)] bg-[var(--color-bg2)] flex items-center justify-center text-[var(--color-text2)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] hover:bg-[var(--color-bg3)] transition-all cursor-pointer"
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </button>
+        </div>
+
+        {/* Right side */}
+        <div className="flex items-center gap-3">
+          {/* Report count badge */}
+          {reportCount != null && reportCount > 0 && (
+            <div
+              className="flex items-center gap-1.5 rounded-full"
+              style={{
+                padding: '4px 12px',
+                fontSize: 12,
+                fontWeight: 600,
+                background: 'rgba(0,255,163,0.1)',
+                border: '1px solid rgba(0,255,163,0.2)',
+                color: 'var(--acc)',
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--acc)', display: 'inline-block' }} />
+              {reportCount} {reportCount === 1 ? 'report' : 'reports'}
+            </div>
+          )}
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="cursor-pointer flex items-center justify-center transition-all"
+            style={{
+              width: 40, height: 40, borderRadius: 12,
+              border: '1px solid var(--bdr)',
+              background: 'transparent',
+              color: 'var(--tx2)',
+            }}
+          >
+            {theme === 'dark' ? <Sun style={{ width: 18, height: 18 }} /> : <Moon style={{ width: 18, height: 18 }} />}
+          </button>
+        </div>
       </div>
     </nav>
   );

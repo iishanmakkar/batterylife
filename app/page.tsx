@@ -123,10 +123,10 @@ function AppContent() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--color-bg0)]">
+    <div className="min-h-screen w-full flex flex-col" style={{ background: 'var(--bg0)', color: 'var(--tx1)' }}>
       <Navbar reportCount={reports.length} />
 
-      <main className="flex-1">
+      <main className="flex-1 w-full">
         {/* Hero always visible */}
         <HeroSection analyzedCount={analyzedCount} />
 
@@ -150,7 +150,7 @@ function AppContent() {
 
         {/* Divider */}
         <div className="max-w-4xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-[var(--color-border)] to-transparent" />
+          <div style={{ height: 1, background: 'linear-gradient(to right, transparent, var(--bdr), transparent)' }} />
         </div>
 
         <AdUnit slot="9012345678" format="horizontal" className="max-w-4xl mx-auto px-6 mt-8" />

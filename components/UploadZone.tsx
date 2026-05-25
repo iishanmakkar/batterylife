@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Battery, Loader2, Play, FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Battery, Upload, Play } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
 import type { BatteryReport } from '@/lib/types';
 import { parseReport } from '@/lib/parser';
 
@@ -12,161 +12,136 @@ interface Props {
 }
 
 export default function UploadZone({ onReportParsed, onDemo }: Props) {
-  const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const processFile = useCallback((file: File) => {
-    if (!file.name.match(/\.(html|htm)$/i)) {
-      setError('Please upload an HTML file from powercfg /batteryreport');
+    if (!file.name.match(/\.html?$/i)) {
+      setError('Please upload an .html file');
       return;
     }
-    setError(null);
-    setSuccess(null);
-    setIsLoading(true);
+    setLoading(true);
+    setError('');
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = () => {
       try {
-        const report = parseReport(ev.target?.result as string, file.name);
-        if (!report.battery.designCapacity && !report.capacityHistory.length) {
-          throw new Error('Could not parse battery data from this file. Make sure it\'s from powercfg /batteryreport.');
-        }
-        setSuccess(`✓ Parsed "${file.name}" successfully`);
-        setTimeout(() => setSuccess(null), 3000);
+        const report = parseReport(reader.result as string, file.name);
         onReportParsed(report);
-      } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : 'Failed to parse report');
+      } catch {
+        setError('Could not parse this file. Make sure it\'s a Windows battery report.');
+      } finally {
+        setLoading(false);
       }
-      setIsLoading(false);
     };
-    reader.onerror = () => { setError('Failed to read file'); setIsLoading(false); };
     reader.readAsText(file);
   }, [onReportParsed]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(false);
+    setDragging(false);
     if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
   }, [processFile]);
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) processFile(e.target.files[0]);
     e.target.value = '';
   }, [processFile]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4, duration: 0.5 }}
-      className="max-w-3xl mx-auto px-6 pb-16"
-    >
-      <div
-        className={`relative border-2 border-dashed rounded-3xl py-16 px-10 text-center transition-all cursor-pointer overflow-hidden ${
-          isDragging
-            ? 'border-[var(--color-accent)] bg-[rgba(0,255,163,0.03)]'
-            : 'border-[var(--color-border2)] bg-[var(--color-bg2)]/50 hover:border-[var(--color-accent)]/50 hover:bg-[var(--color-bg2)]'
-        }`}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-      >
-        {/* Drag glow effect */}
-        {isDragging && (
-          <div className="absolute inset-0 pointer-events-none rounded-3xl" style={{
-            background: 'radial-gradient(ellipse at 50% 50%, rgba(0,255,163,0.08) 0%, transparent 70%)'
-          }} />
-        )}
+    <section className="w-full px-6 mb-16">
+      <div className="w-full max-w-[800px] mx-auto">
+        <input ref={fileRef} type="file" accept=".html,.htm" className="hidden" onChange={handleChange} multiple />
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".html,.htm"
-          onChange={handleFileChange}
-          className="hidden"
-          multiple
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={handleDrop}
+          onClick={() => fileRef.current?.click()}
+          className="relative rounded-3xl cursor-pointer transition-all duration-300 flex flex-col items-center text-center"
+          style={{
+            background: 'var(--bg2)',
+            border: dragging ? '2px solid var(--acc)' : '2px dashed var(--bdr2)',
+            padding: 'clamp(40px, 6vw, 64px) 32px',
+            boxShadow: dragging ? '0 0 40px rgba(0,255,163,0.1)' : 'none',
+          }}
+        >
+          {/* Battery Icon */}
+          <div
+            className="flex items-center justify-center mb-6"
+            style={{
+              width: 72, height: 72, borderRadius: 20,
+              background: 'linear-gradient(135deg, rgba(0,255,163,0.15), rgba(0,212,255,0.1))',
+              border: '1px solid rgba(0,255,163,0.2)',
+            }}
+          >
+            {loading ? (
+              <div className="animate-spin" style={{ width: 32, height: 32, border: '3px solid var(--bdr2)', borderTopColor: 'var(--acc)', borderRadius: '50%' }} />
+            ) : (
+              <Battery style={{ width: 32, height: 32, color: 'var(--acc)' }} />
+            )}
+          </div>
 
-        <AnimatePresence mode="wait">
-          {isLoading ? (
-            <motion.div key="loading" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-5 py-4">
-              <div className="w-16 h-16 rounded-2xl bg-[rgba(0,255,163,0.1)] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-[var(--color-accent)] animate-spin" />
-              </div>
-              <p className="text-[var(--color-text1)] font-semibold text-lg">Processing battery report...</p>
-              <p className="text-[var(--color-text3)] text-sm">Parsing data and computing health analysis</p>
-            </motion.div>
-          ) : (
-            <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              {/* Icon */}
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[rgba(0,255,163,0.15)] to-[rgba(0,212,255,0.08)] border border-[rgba(0,255,163,0.2)] flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform">
-                <Battery className="w-9 h-9 text-[var(--color-accent)]" />
-              </div>
+          {/* Title */}
+          <h3 className="font-syne font-bold mb-2" style={{ fontSize: 'clamp(20px, 3vw, 26px)', color: 'var(--tx1)' }}>
+            Drop your battery report here
+          </h3>
 
-              {/* Title */}
-              <h3 className="font-syne text-2xl font-bold mb-2 text-[var(--color-text1)]">
-                Drop your battery report here
-              </h3>
-              <p className="text-[var(--color-text2)] text-sm mb-8 max-w-md mx-auto">
-                Drag & drop your <code className="bg-[var(--color-bg3)] px-1.5 py-0.5 rounded text-[var(--color-accent)] text-xs">battery-report.html</code> file, or click to browse. Supports multiple files for comparison.
-              </p>
+          {/* Subtitle */}
+          <p className="mb-8" style={{ fontSize: 14, color: 'var(--tx2)', maxWidth: 420 }}>
+            Drag &amp; drop your <code className="font-mono" style={{ color: 'var(--acc)', fontSize: 13, background: 'rgba(0,255,163,0.08)', padding: '2px 6px', borderRadius: 4 }}>battery-report.html</code> file, or click to browse.
+            Supports multiple files for comparison.
+          </p>
 
-              {/* Buttons */}
-              <div className="flex gap-3 justify-center flex-wrap" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="py-3 px-8 rounded-xl text-sm font-semibold bg-[var(--color-accent)] text-black border-none hover:brightness-110 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,255,163,0.2)] transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Upload className="w-4 h-4" /> Choose file
-                </button>
-                <button
-                  onClick={onDemo}
-                  className="py-3 px-8 rounded-xl text-sm font-medium bg-transparent text-[var(--color-text2)] border border-[var(--color-border2)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Play className="w-4 h-4" /> View demo
-                </button>
-              </div>
-
-              {/* Accepted formats */}
-              <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-[var(--color-text3)]">
-                <FileText className="w-3 h-3" />
-                Accepts .html from <code className="text-[var(--color-text2)]">powercfg /batteryreport</code> · 100% local processing
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Success message */}
-        <AnimatePresence>
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="mt-5 text-[var(--color-accent)] text-sm bg-[rgba(0,255,163,0.08)] border border-[rgba(0,255,163,0.2)] rounded-xl py-2.5 px-4 font-medium"
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <button
+              onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+              className="flex items-center gap-2 cursor-pointer font-semibold transition-all active:scale-95"
+              style={{
+                background: 'var(--acc)',
+                color: '#080c12',
+                padding: '12px 28px',
+                borderRadius: 12,
+                fontSize: 14,
+                border: 'none',
+                boxShadow: '0 4px 20px rgba(0,255,163,0.25)',
+              }}
             >
-              {success}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <Upload style={{ width: 16, height: 16 }} /> Choose File
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDemo(); }}
+              className="flex items-center gap-2 cursor-pointer font-medium transition-all active:scale-95"
+              style={{
+                background: 'transparent',
+                color: 'var(--tx1)',
+                padding: '12px 28px',
+                borderRadius: 12,
+                fontSize: 14,
+                border: '1px solid var(--bdr2)',
+              }}
+            >
+              <Play style={{ width: 14, height: 14 }} /> View Demo
+            </button>
+          </div>
 
-        {/* Error message */}
-        <AnimatePresence>
+          {/* Error */}
           {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="mt-5 text-[var(--color-danger)] text-sm bg-[rgba(255,79,79,0.08)] border border-[rgba(255,79,79,0.2)] rounded-xl py-2.5 px-4"
-            >
-              {error}
-            </motion.div>
+            <p className="mt-4" style={{ fontSize: 13, color: 'var(--dng)' }}>{error}</p>
           )}
-        </AnimatePresence>
+        </motion.div>
+
+        {/* Accepted formats */}
+        <p className="text-center mt-4" style={{ fontSize: 12, color: 'var(--tx3)' }}>
+          Accepted: <code className="font-mono" style={{ color: 'var(--tx2)' }}>battery-report.html</code> generated via{' '}
+          <code className="font-mono" style={{ color: 'var(--acc)', fontSize: 11 }}>powercfg /batteryreport</code>
+        </p>
       </div>
-    </motion.div>
+    </section>
   );
 }

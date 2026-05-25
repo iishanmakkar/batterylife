@@ -1,58 +1,66 @@
 'use client';
-import { Zap, Heart } from 'lucide-react';
+
+import { Heart } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[var(--color-border)] bg-[var(--color-bg1)]">
-      <div className="max-w-5xl mx-auto py-14 px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10 mb-10">
+    <footer className="w-full" style={{ borderTop: '1px solid var(--bdr)', background: 'var(--bg1)' }}>
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        {/* 3-column grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent2)] flex items-center justify-center">
-                <Zap className="w-3.5 h-3.5 text-black" fill="black" />
+            <div className="flex items-center gap-2 mb-4">
+              <div
+                className="flex items-center justify-center"
+                style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #00ffa3, #00d4ff)', fontSize: 14 }}
+              >
+                ⚡
               </div>
-              <span className="font-syne font-bold text-lg text-[var(--color-text1)]">
-                Battery<span className="text-[var(--color-accent)]">IQ</span>
+              <span className="font-syne font-bold" style={{ fontSize: 18, color: 'var(--tx1)' }}>
+                Battery<span style={{ color: 'var(--acc)' }}>IQ</span>
               </span>
             </div>
-            <p className="text-sm text-[var(--color-text3)] leading-relaxed max-w-[280px]">
+            <p className="leading-relaxed" style={{ fontSize: 14, color: 'var(--tx2)', maxWidth: 280 }}>
               Professional battery health analysis for Windows laptops. Free, private, and runs entirely in your browser.
             </p>
           </div>
 
           {/* Features */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-[2px] text-[var(--color-text3)] mb-4">Features</h4>
-            <ul className="text-sm text-[var(--color-text2)] space-y-2.5">
-              <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-[var(--color-accent)]" /> Health Score Analysis</li>
-              <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-[var(--color-accent)]" /> Degradation Tracking</li>
-              <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-[var(--color-accent)]" /> Multi-Report Compare</li>
-              <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-[var(--color-accent)]" /> PDF & JSON Export</li>
-              <li className="flex items-center gap-2"><span className="w-1 h-1 rounded-full bg-[var(--color-accent)]" /> AI-Powered Insights</li>
+            <h4 className="font-semibold mb-4" style={{ fontSize: 14, color: 'var(--tx1)' }}>Features</h4>
+            <ul className="flex flex-col gap-2.5">
+              {['Health Score Analysis', 'Degradation Tracking', 'Multi-Report Compare', 'PDF & JSON Export', 'AI-Powered Insights'].map((f, i) => (
+                <li key={i} className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--tx2)' }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--acc)', flexShrink: 0 }} />
+                  {f}
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Privacy */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-[2px] text-[var(--color-text3)] mb-4">Privacy Promise</h4>
-            <ul className="text-sm text-[var(--color-text2)] space-y-2.5">
-              <li className="flex items-center gap-2"><span className="text-[var(--color-accent)]">✓</span> 100% client-side processing</li>
-              <li className="flex items-center gap-2"><span className="text-[var(--color-accent)]">✓</span> No data uploaded to servers</li>
-              <li className="flex items-center gap-2"><span className="text-[var(--color-accent)]">✓</span> No account required</li>
-              <li className="flex items-center gap-2"><span className="text-[var(--color-accent)]">✓</span> No tracking or analytics</li>
-              <li className="flex items-center gap-2"><span className="text-[var(--color-accent)]">✓</span> Reports auto-saved locally</li>
+            <h4 className="font-semibold mb-4" style={{ fontSize: 14, color: 'var(--tx1)' }}>Privacy Promise</h4>
+            <ul className="flex flex-col gap-2.5">
+              {['100% client-side processing', 'No data uploaded to servers', 'No account required', 'No tracking or analytics', 'Reports auto-saved locally'].map((p, i) => (
+                <li key={i} className="flex items-center gap-2" style={{ fontSize: 13, color: 'var(--tx2)' }}>
+                  <span style={{ color: 'var(--acc)' }}>✓</span>
+                  {p}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-[var(--color-border)] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 text-xs text-[var(--color-text3)]">
-            Built with <Heart className="w-3 h-3 text-[var(--color-danger)] fill-[var(--color-danger)]" /> by BatteryIQ
-          </div>
-          <div className="text-xs text-[var(--color-text3)]">
-            v4.0 · Reports auto-saved in your browser
-          </div>
+        {/* Bottom bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-8" style={{ borderTop: '1px solid var(--bdr)' }}>
+          <span className="font-mono flex items-center gap-1" style={{ fontSize: 13, color: 'var(--tx3)' }}>
+            Built with <Heart style={{ width: 12, height: 12, color: 'var(--dng)', fill: 'var(--dng)' }} /> · BatteryIQ v4.0
+          </span>
+          <span style={{ fontSize: 13, color: 'var(--tx3)' }}>
+            © {new Date().getFullYear()} BatteryIQ. Built for longevity.
+          </span>
         </div>
       </div>
     </footer>
