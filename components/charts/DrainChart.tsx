@@ -15,12 +15,12 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
   return (
-    <div style={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
-      <p style={{ color: '#8899aa', marginBottom: 4 }}>{d.date}</p>
-      <p className="font-mono" style={{ color: '#e8f0fe' }}>Drain: {d.drain}%</p>
-      <p style={{ color: '#8899aa' }}>Duration: {d.dur}</p>
-      <p style={{ color: '#8899aa' }}>Energy: {d.mwh} mWh</p>
-      <p style={{ color: '#8899aa' }}>Rate: {d.rate} mWh/h</p>
+    <div style={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+      <p style={{ color: 'var(--chart-muted)', marginBottom: 4 }}>{d.date}</p>
+      <p className="font-mono" style={{ color: 'var(--tx1)' }}>Drain: {d.drain}%</p>
+      <p style={{ color: 'var(--chart-muted)' }}>Duration: {d.dur}</p>
+      <p style={{ color: 'var(--chart-muted)' }}>Energy: {d.mwh} mWh</p>
+      <p style={{ color: 'var(--chart-muted)' }}>Rate: {d.rate} mWh/h</p>
     </div>
   );
 };

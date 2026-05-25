@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import AdUnit from '@/components/AdUnit';
 import type { BatteryReport } from '@/lib/types';
 import { saveReports, loadReports, getAnalyzedCount, incrementCount } from '@/lib/storage';
+import { normalizeReport, normalizeReports } from '@/lib/normalize';
 
 /** Generate a realistic demo battery report for demonstration */
 function generateDemoReport(): BatteryReport {
@@ -77,7 +78,7 @@ function AppContent() {
 
   const handleReportParsed = useCallback((report: BatteryReport) => {
     setReports(prev => {
-      const next = [...prev, report];
+      const next = [...prev, normalizeReport(report)];
       saveReports(next);
       return next;
     });
@@ -91,7 +92,7 @@ function AppContent() {
   const handleDemo = useCallback(() => {
     const demo = generateDemoReport();
     setReports(prev => {
-      const next = [...prev, demo];
+      const next = [...prev, normalizeReport(demo)];
       saveReports(next);
       return next;
     });
@@ -103,8 +104,9 @@ function AppContent() {
   }, []);
 
   const handleAddReport = useCallback((newReports: BatteryReport[]) => {
-    setReports(newReports);
-    saveReports(newReports);
+    const normalized = normalizeReports(newReports);
+    setReports(normalized);
+    saveReports(normalized);
     setAnalyzedCount(prev => prev + (newReports.length - reports.length));
   }, [reports.length]);
 
@@ -134,7 +136,7 @@ function AppContent() {
         {!showDashboard && (
           <>
             <UploadZone onReportParsed={handleReportParsed} onDemo={handleDemo} />
-            <div style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
+            <div className="ad-slot-wrap" style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
               <AdUnit slot="8901234567" format="horizontal" />
             </div>
           </>
@@ -155,11 +157,11 @@ function AppContent() {
           <div style={{ height: 1, background: 'linear-gradient(to right, transparent, var(--bdr), transparent)' }} />
         </div>
 
-        <div style={{ maxWidth: 896, margin: '0 auto', padding: '32px 24px 0' }}>
+        <div className="ad-slot-wrap" style={{ maxWidth: 896, margin: '0 auto', padding: '32px 24px 0' }}>
           <AdUnit slot="9012345678" format="horizontal" />
         </div>
         <FAQSection />
-        <div style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
+        <div className="ad-slot-wrap" style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
           <AdUnit slot="0123456789" format="horizontal" />
         </div>
       </main>

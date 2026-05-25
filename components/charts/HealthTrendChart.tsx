@@ -20,10 +20,10 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   if (!active || !payload?.length) return null;
   const point = payload[0].payload;
   return (
-    <div style={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
-      <p style={{ color: '#8899aa', marginBottom: 4 }}>{label}</p>
-      <p className="font-mono" style={{ color: '#e8f0fe', fontWeight: 600 }}>{point.health.toFixed(1)}% health</p>
-      <p style={{ color: '#8899aa' }}>{(point.fcc / 1000).toFixed(1)} Wh full charge</p>
+    <div style={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+      <p style={{ color: 'var(--chart-muted)', marginBottom: 4 }}>{label}</p>
+      <p className="font-mono" style={{ color: 'var(--tx1)', fontWeight: 600 }}>{point.health.toFixed(1)}% health</p>
+      <p style={{ color: 'var(--chart-muted)' }}>{(point.fcc / 1000).toFixed(1)} Wh full charge</p>
     </div>
   );
 };
@@ -55,7 +55,7 @@ export default function HealthTrendChart({ data, designCapacity, height = 260 }:
           <Tooltip content={<CustomTooltip />} />
           <ReferenceLine y={100} stroke="#00ffa3" strokeDasharray="5 5" label={{ value: '100%', fill: '#00ffa3', fontSize: 10, position: 'right' }} />
           <ReferenceLine y={80} stroke="#ffb830" strokeDasharray="5 5" label={{ value: 'Replace watch', fill: '#ffb830', fontSize: 10, position: 'right' }} />
-          <Area type="monotone" dataKey="health" stroke="#00d4ff" strokeWidth={2} fill="url(#healthTrendGrad)" dot={{ r: 3, fill: '#00d4ff', stroke: '#131920', strokeWidth: 2 }} activeDot={{ r: 5 }} />
+          <Area type="monotone" dataKey="health" stroke="#00d4ff" strokeWidth={2} fill="url(#healthTrendGrad)" dot={{ r: 3, fill: '#00d4ff', stroke: 'var(--chart-dot-stroke)', strokeWidth: 2 }} activeDot={{ r: 5 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

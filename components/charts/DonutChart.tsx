@@ -9,7 +9,7 @@ const COLORS = ['#00ffa3', '#00d4ff'];
 const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number; payload: { fill: string } }> }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+    <div style={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
       <p style={{ color: payload[0].payload.fill }} className="font-mono">{payload[0].name}: {payload[0].value.toFixed(1)}h</p>
     </div>
   );

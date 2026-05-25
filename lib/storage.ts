@@ -4,6 +4,7 @@
 ═══════════════════════════════════════════════════════════════════ */
 
 import type { BatteryReport } from './types';
+import { normalizeReports } from './normalize';
 
 const STORAGE_KEY = 'batteryiq_reports';
 const COUNT_KEY = 'batteryiq_count';
@@ -12,7 +13,7 @@ const THEME_KEY = 'batteryiq_theme';
 /** Save reports array to localStorage */
 export function saveReports(reports: BatteryReport[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeReports(reports)));
   } catch (e) {
     console.warn('BatteryIQ: Failed to save reports:', e);
   }
@@ -24,7 +25,7 @@ export function loadReports(): BatteryReport[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
-      if (Array.isArray(data) && data.length > 0) return data;
+      if (Array.isArray(data) && data.length > 0) return normalizeReports(data);
     }
   } catch (e) {
     console.warn('BatteryIQ: Failed to load reports:', e);

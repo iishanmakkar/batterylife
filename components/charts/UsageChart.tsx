@@ -8,8 +8,8 @@ interface Props { data: UsageEntry[]; height?: number; }
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string; color: string }>; label?: string }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
-      <p style={{ color: '#8899aa', marginBottom: 4 }}>{label}</p>
+    <div style={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+      <p style={{ color: 'var(--chart-muted)', marginBottom: 4 }}>{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }} className="font-mono">{p.name}: {p.value.toFixed(1)}h</p>
       ))}
@@ -32,7 +32,7 @@ export default function UsageChart({ data, height = 260 }: Props) {
           <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#536070' }} axisLine={false} tickLine={false} />
           <YAxis tickFormatter={(v: number) => `${v}h`} tick={{ fontSize: 11, fill: '#536070' }} axisLine={false} tickLine={false} />
           <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ fontSize: 11, color: '#8899aa' }} />
+          <Legend wrapperStyle={{ fontSize: 11, color: 'var(--chart-muted)' }} />
           <Bar dataKey="bat" name="Battery" stackId="a" fill="#00ffa3" fillOpacity={0.8} radius={[0, 0, 0, 0]} maxBarSize={24} />
           <Bar dataKey="ac" name="AC Power" stackId="a" fill="#00d4ff" fillOpacity={0.6} radius={[4, 4, 0, 0]} maxBarSize={24} />
         </BarChart>

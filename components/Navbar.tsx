@@ -10,7 +10,7 @@ export default function Navbar({ reportCount }: { reportCount?: number }) {
     <nav style={{
       position: 'sticky', top: 0, zIndex: 50, width: '100%',
       height: 64, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-      background: 'rgba(8,12,18,0.85)', borderBottom: '1px solid var(--bdr)',
+      background: 'var(--nav-bg)', borderBottom: '1px solid var(--bdr)',
     }}>
       <div style={{
         maxWidth: 1200, margin: '0 auto', padding: '0 24px',

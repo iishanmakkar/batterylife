@@ -12,6 +12,7 @@ import { computeHealth, getVerdicts } from '@/lib/health';
 import { generateInsights } from '@/lib/insights';
 import { estimateGamingDamage, estimateResaleImpact, estimateDeviceAge } from '@/lib/detection';
 import { parseReport } from '@/lib/parser';
+import { normalizeReport } from '@/lib/normalize';
 
 import ScoreCard from './ScoreCard';
 import MetricCard from './MetricCard';
@@ -54,7 +55,7 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
   const [showExport, setShowExport] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const report = reports[activeIdx] || reports[0];
+  const report = normalizeReport(reports[activeIdx] || reports[0]);
   const health = useMemo(() => computeHealth(report), [report]);
   const verdicts = useMemo(() => getVerdicts(report, health), [report, health]);
   const insights = useMemo(() => generateInsights(report, health), [report, health]);
@@ -69,7 +70,7 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          newReports.push(parseReport(reader.result as string, file.name));
+          newReports.push(normalizeReport(parseReport(reader.result as string, file.name)));
           if (newReports.length === e.target.files!.length) {
             onAddReport([...reports, ...newReports]);
           }
@@ -106,12 +107,12 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
       id="dashboard-root"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{ maxWidth: 1024, margin: '0 auto', padding: '0 24px 64px', width: '100%' }}
+      style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px 56px', width: '100%' }}
     >
       <input ref={fileRef} type="file" accept=".html,.htm" multiple style={{ display: 'none' }} onChange={handleAddFile} />
 
       {/* ── Tab Navigation ─────────────────────────────────────── */}
-      <div style={{ position: 'sticky', top: 64, zIndex: 40, background: 'rgba(8,12,18,0.9)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid var(--bdr)', marginBottom: 24, marginLeft: -24, marginRight: -24, padding: '0 24px' }}>
+      <div style={{ position: 'sticky', top: 64, zIndex: 40, background: 'var(--sticky-bg)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid var(--bdr)', marginBottom: 20, marginLeft: -24, marginRight: -24, padding: '0 24px' }}>
         <div className="scrollbar-none" style={{ display: 'flex', alignItems: 'center', gap: 4, overflowX: 'auto', padding: '8px 0' }}>
           {tabs.map(t => (
             <button
@@ -145,12 +146,12 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
 
       {/* ── Report Selector (if multiple) ──────────────────────── */}
       {reports.length > 1 && (
-        <div className="flex items-center gap-2 mb-5 flex-wrap">
+        <div className="flex items-center gap-2.5 mb-7 flex-wrap">
           {reports.map((r, i) => (
             <div key={i} className="flex items-center gap-0">
               <button
                 onClick={() => setActiveIdx(i)}
-                className={`py-1.5 px-3 rounded-l-lg text-xs font-medium transition-all cursor-pointer ${
+                className={`py-2 px-3.5 rounded-l-lg text-xs font-medium transition-all cursor-pointer ${
                   i === activeIdx
                     ? 'bg-[var(--color-accent)] text-black'
                     : 'bg-[var(--color-bg2)] text-[var(--color-text2)] border border-[var(--color-border)] hover:border-[var(--color-accent)]'
@@ -160,7 +161,7 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               </button>
               <button
                 onClick={() => onRemoveReport(i)}
-                className={`py-1.5 px-1.5 rounded-r-lg text-xs transition-all cursor-pointer ${
+                className={`py-2 px-2 rounded-r-lg text-xs transition-all cursor-pointer ${
                   i === activeIdx
                     ? 'bg-[rgba(0,255,163,0.7)] text-black hover:bg-[var(--color-danger)] hover:text-white'
                     : 'bg-[var(--color-bg2)] text-[var(--color-text3)] border border-l-0 border-[var(--color-border)] hover:text-[var(--color-danger)]'
@@ -170,7 +171,7 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               </button>
             </div>
           ))}
-          <button onClick={() => fileRef.current?.click()} className="py-1.5 px-3 rounded-lg text-xs font-medium bg-[var(--color-bg2)] text-[var(--color-text3)] border border-dashed border-[var(--color-border2)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all cursor-pointer flex items-center gap-1">
+          <button onClick={() => fileRef.current?.click()} className="py-2 px-3.5 rounded-lg text-xs font-medium bg-[var(--color-bg2)] text-[var(--color-text3)] border border-dashed border-[var(--color-border2)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all cursor-pointer flex items-center gap-1">
             <Plus className="w-3 h-3" /> Add report
           </button>
         </div>
@@ -231,13 +232,13 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Activity style={{ width: 16, height: 16, color: 'var(--wrn)' }} /> Diagnostics
               </h3>
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {verdicts.map((v, i) => (
-                  <div key={i} className={`flex items-start gap-3 py-2 px-3.5 rounded-xl pill-${v.type}`}>
-                    <span className="text-lg mt-0.5">{v.icon}</span>
+                  <div key={i} className={`flex items-start gap-3 rounded-xl pill-${v.type}`} style={{ padding: '12px 16px' }}>
+                    <span className="text-lg mt-0.5" style={{ lineHeight: 1 }}>{v.icon}</span>
                     <div>
-                      <div className="text-sm font-semibold">{v.title}</div>
-                      <div className="text-xs opacity-80">{v.desc}</div>
+                      <div className="text-sm font-semibold" style={{ marginBottom: 3 }}>{v.title}</div>
+                      <div className="text-xs opacity-80" style={{ lineHeight: 1.45 }}>{v.desc}</div>
                     </div>
                   </div>
                 ))}

@@ -48,6 +48,12 @@
   --wrn: #ffb830;
   --dng: #ff4f4f;
   --gd: #00ffa3;
+  --nav-bg: rgba(8, 12, 18, 0.86);
+  --sticky-bg: rgba(8, 12, 18, 0.9);
+  --tooltip-bg: #131920;
+  --tooltip-border: #1e2d3d;
+  --chart-muted: #8899aa;
+  --chart-dot-stroke: #131920;
 }
 
 /* ── Light Mode Overrides ────────────────────────────── */
@@ -67,6 +73,12 @@
   --wrn: #b87800;
   --dng: #c0392b;
   --gd: #008f5d;
+  --nav-bg: rgba(255, 255, 255, 0.86);
+  --sticky-bg: rgba(247, 249, 253, 0.92);
+  --tooltip-bg: #ffffff;
+  --tooltip-border: #dce3ee;
+  --chart-muted: #4a5568;
+  --chart-dot-stroke: #ffffff;
 }
 
 /* ── Base Styles ──────────────────────────────────────── */
@@ -79,6 +91,7 @@
 html {
   scroll-behavior: smooth;
   color-scheme: dark;
+  overflow-x: hidden;
 }
 
 .light {
@@ -91,6 +104,7 @@ body {
   color: var(--tx1);
   line-height: 1.6;
   min-height: 100vh;
+  overflow-x: hidden;
   transition: background 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -197,3 +211,8 @@ body {
   border: 1px solid var(--bdr);
 }
 .ad-container ins { display: block; width: 100%; }
+
+.ad-slot-wrap:has([data-ad-state="unfilled"]),
+.ad-slot-wrap:has([data-ad-state="pending"]) {
+  display: none;
+}

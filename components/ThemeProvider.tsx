@@ -16,7 +16,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const saved = getTheme();
     setThemeState(saved);
-    if (saved === 'light') document.documentElement.classList.add('light');
+    document.documentElement.classList.toggle('light', saved === 'light');
   }, []);
 
   const toggleTheme = () => {

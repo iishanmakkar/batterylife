@@ -8,10 +8,10 @@ interface Props { data: LifeEstimate[]; height?: number; }
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string }>; label?: string }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
-      <p style={{ color: '#8899aa', marginBottom: 4 }}>{label}</p>
+    <div style={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+      <p style={{ color: 'var(--chart-muted)', marginBottom: 4 }}>{label}</p>
       {payload.map((p, i) => (
-        <p key={i} className="font-mono" style={{ color: '#e8f0fe' }}>{p.name}: {p.value.toFixed(1)}h</p>
+        <p key={i} className="font-mono" style={{ color: 'var(--tx1)' }}>{p.name}: {p.value.toFixed(1)}h</p>
       ))}
     </div>
   );

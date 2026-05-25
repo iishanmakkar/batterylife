@@ -8,9 +8,9 @@ interface Props { data: CapacityEntry[]; designCapacity?: number; trendLine?: Ar
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
-      <p style={{ color: '#8899aa', marginBottom: 4 }}>{label}</p>
-      <p className="font-mono" style={{ color: '#e8f0fe', fontWeight: 600 }}>{(payload[0].value / 1000).toFixed(1)} Wh</p>
+    <div style={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
+      <p style={{ color: 'var(--chart-muted)', marginBottom: 4 }}>{label}</p>
+      <p className="font-mono" style={{ color: 'var(--tx1)', fontWeight: 600 }}>{(payload[0].value / 1000).toFixed(1)} Wh</p>
     </div>
   );
 };
@@ -39,7 +39,7 @@ export default function CapacityChart({ data, designCapacity, height = 260 }: Pr
           {designCapacity && (
             <ReferenceLine y={designCapacity} stroke="#ff4f4f" strokeDasharray="5 5" label={{ value: 'Design', fill: '#ff4f4f', fontSize: 10, position: 'right' }} />
           )}
-          <Area type="monotone" dataKey="fcc" stroke="#00ffa3" strokeWidth={2} fill="url(#capGrad)" dot={{ r: 3, fill: '#00ffa3', stroke: '#131920', strokeWidth: 2 }} activeDot={{ r: 5 }} />
+          <Area type="monotone" dataKey="fcc" stroke="#00ffa3" strokeWidth={2} fill="url(#capGrad)" dot={{ r: 3, fill: '#00ffa3', stroke: 'var(--chart-dot-stroke)', strokeWidth: 2 }} activeDot={{ r: 5 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

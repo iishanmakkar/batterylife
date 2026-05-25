@@ -27,7 +27,7 @@ export default function CompareChart({ reports, height = 260 }: Props) {
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
           <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#536070' }} axisLine={false} tickLine={false} />
           <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: '#536070' }} axisLine={false} tickLine={false} />
-          <Tooltip contentStyle={{ background: '#131920', border: '1px solid #1e2d3d', borderRadius: 8, fontSize: 12 }} labelStyle={{ color: '#8899aa' }} itemStyle={{ color: '#e8f0fe' }} />
+          <Tooltip contentStyle={{ background: 'var(--tooltip-bg)', border: '1px solid var(--tooltip-border)', borderRadius: 8, fontSize: 12 }} labelStyle={{ color: 'var(--chart-muted)' }} itemStyle={{ color: 'var(--tx1)' }} />
           <Bar dataKey="score" name="Health Score" radius={[6, 6, 0, 0]} maxBarSize={48}>
             {data.map((d, i) => <Cell key={i} fill={d.color} fillOpacity={0.8} />)}
           </Bar>
