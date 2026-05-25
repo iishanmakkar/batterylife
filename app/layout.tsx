@@ -61,6 +61,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <script src="https://quge5.com/88/tag.min.js" data-zone="243065" async data-cfasync="false"></script>
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#080c12" />
         <meta name="google-adsense-account" content="ca-pub-6088632479455301" />
