@@ -17,12 +17,12 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 export default function CapacityChart({ data, designCapacity, height = 260 }: Props) {
   return (
-    <div className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5">
+    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text1)]">
-          <TrendingDown className="w-4 h-4 text-[var(--accent)]" /> Capacity Over Time
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
+          <TrendingDown className="w-4 h-4 text-[var(--color-accent)]" /> Capacity Over Time
         </div>
-        <span className="text-xs text-[var(--text3)]">{data.length} data points</span>
+        <span className="text-xs text-[var(--color-text3)]">{data.length} data points</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>

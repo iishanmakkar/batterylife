@@ -19,12 +19,12 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 export default function UsageChart({ data, height = 260 }: Props) {
   return (
-    <div className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5">
+    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text1)]">
-          <BarChart3 className="w-4 h-4 text-[var(--accent3)]" /> Usage Patterns
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
+          <BarChart3 className="w-4 h-4 text-[var(--color-accent3)]" /> Usage Patterns
         </div>
-        <span className="text-xs text-[var(--text3)]">{data.length} days</span>
+        <span className="text-xs text-[var(--color-text3)]">{data.length} days</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>

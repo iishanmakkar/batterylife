@@ -24,10 +24,10 @@ export default function DonutChart({ batteryHours, acHours, height = 220 }: Prop
   ];
 
   return (
-    <div className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5">
+    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text1)]">
-          <Plug className="w-4 h-4 text-[var(--accent2)]" /> Power Source Split
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
+          <Plug className="w-4 h-4 text-[var(--color-accent2)]" /> Power Source Split
         </div>
       </div>
       <div className="relative">
@@ -40,13 +40,13 @@ export default function DonutChart({ batteryHours, acHours, height = 220 }: Prop
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="font-mono text-2xl font-bold text-[var(--text1)]">{batPct}%</span>
-          <span className="text-[11px] text-[var(--text3)]">on battery</span>
+          <span className="font-mono text-2xl font-bold text-[var(--color-text1)]">{batPct}%</span>
+          <span className="text-[11px] text-[var(--color-text3)]">on battery</span>
         </div>
       </div>
       <div className="flex justify-center gap-6 mt-3">
         {data.map((d, i) => (
-          <div key={i} className="flex items-center gap-2 text-xs text-[var(--text2)]">
+          <div key={i} className="flex items-center gap-2 text-xs text-[var(--color-text2)]">
             <span className="w-2.5 h-2.5 rounded-sm" style={{ background: COLORS[i] }} />
             {d.name} ({d.value.toFixed(1)}h)
           </div>

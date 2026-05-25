@@ -29,12 +29,12 @@ export default function DrainChart({ data, height = 260 }: Props) {
   const chartData = data.map((d, i) => ({ ...d, label: `S${i + 1}` }));
 
   return (
-    <div className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5">
+    <div className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text1)]">
-          <Activity className="w-4 h-4 text-[var(--warn)]" /> Drain Sessions
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-text1)]">
+          <Activity className="w-4 h-4 text-[var(--color-warn)]" /> Drain Sessions
         </div>
-        <span className="text-xs text-[var(--text3)]">{data.length} sessions</span>
+        <span className="text-xs text-[var(--color-text3)]">{data.length} sessions</span>
       </div>
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={chartData} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>

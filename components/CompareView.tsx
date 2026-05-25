@@ -8,11 +8,11 @@ export default function CompareView({ reports }: { reports: BatteryReport[] }) {
       {reports.map((r, i) => {
         const h = computeHealth(r);
         return (
-          <div key={i} className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--border2)] transition-all">
+          <div key={i} className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5 hover:border-[var(--color-border2)] transition-all">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <h4 className="text-sm font-semibold text-[var(--text1)] truncate max-w-[180px]">{r.filename}</h4>
-                <p className="text-xs text-[var(--text3)]">{r.device.name}</p>
+                <h4 className="text-sm font-semibold text-[var(--color-text1)] truncate max-w-[180px]">{r.filename}</h4>
+                <p className="text-xs text-[var(--color-text3)]">{r.device.name}</p>
               </div>
               <div className="w-12 h-12 rounded-xl flex items-center justify-center font-mono text-xl font-bold" style={{ background: `${h.color}18`, color: h.color }}>
                 {h.score}
@@ -28,8 +28,8 @@ export default function CompareView({ reports }: { reports: BatteryReport[] }) {
                 { l: 'Status', v: h.status },
               ].map((row, j) => (
                 <div key={j} className="flex justify-between text-xs">
-                  <span className="text-[var(--text3)]">{row.l}</span>
-                  <span className="font-mono text-[var(--text1)] font-medium">{row.v}</span>
+                  <span className="text-[var(--color-text3)]">{row.l}</span>
+                  <span className="font-mono text-[var(--color-text1)] font-medium">{row.v}</span>
                 </div>
               ))}
             </div>

@@ -66,8 +66,8 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
       <div
         className={`relative border-2 border-dashed rounded-3xl py-16 px-10 text-center transition-all cursor-pointer overflow-hidden ${
           isDragging
-            ? 'border-[var(--accent)] bg-[rgba(0,255,163,0.03)]'
-            : 'border-[var(--border2)] bg-[var(--bg2)]/50 hover:border-[var(--accent)]/50 hover:bg-[var(--bg2)]'
+            ? 'border-[var(--color-accent)] bg-[rgba(0,255,163,0.03)]'
+            : 'border-[var(--color-border2)] bg-[var(--color-bg2)]/50 hover:border-[var(--color-accent)]/50 hover:bg-[var(--color-bg2)]'
         }`}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={() => setIsDragging(false)}
@@ -94,46 +94,46 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
           {isLoading ? (
             <motion.div key="loading" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-5 py-4">
               <div className="w-16 h-16 rounded-2xl bg-[rgba(0,255,163,0.1)] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-[var(--accent)] animate-spin" />
+                <Loader2 className="w-8 h-8 text-[var(--color-accent)] animate-spin" />
               </div>
-              <p className="text-[var(--text1)] font-semibold text-lg">Processing battery report...</p>
-              <p className="text-[var(--text3)] text-sm">Parsing data and computing health analysis</p>
+              <p className="text-[var(--color-text1)] font-semibold text-lg">Processing battery report...</p>
+              <p className="text-[var(--color-text3)] text-sm">Parsing data and computing health analysis</p>
             </motion.div>
           ) : (
             <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               {/* Icon */}
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[rgba(0,255,163,0.15)] to-[rgba(0,212,255,0.08)] border border-[rgba(0,255,163,0.2)] flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform">
-                <Battery className="w-9 h-9 text-[var(--accent)]" />
+                <Battery className="w-9 h-9 text-[var(--color-accent)]" />
               </div>
 
               {/* Title */}
-              <h3 className="font-syne text-2xl font-bold mb-2 text-[var(--text1)]">
+              <h3 className="font-syne text-2xl font-bold mb-2 text-[var(--color-text1)]">
                 Drop your battery report here
               </h3>
-              <p className="text-[var(--text2)] text-sm mb-8 max-w-md mx-auto">
-                Drag & drop your <code className="bg-[var(--bg3)] px-1.5 py-0.5 rounded text-[var(--accent)] text-xs">battery-report.html</code> file, or click to browse. Supports multiple files for comparison.
+              <p className="text-[var(--color-text2)] text-sm mb-8 max-w-md mx-auto">
+                Drag & drop your <code className="bg-[var(--color-bg3)] px-1.5 py-0.5 rounded text-[var(--color-accent)] text-xs">battery-report.html</code> file, or click to browse. Supports multiple files for comparison.
               </p>
 
               {/* Buttons */}
               <div className="flex gap-3 justify-center flex-wrap" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="py-3 px-8 rounded-xl text-sm font-semibold bg-[var(--accent)] text-black border-none hover:brightness-110 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,255,163,0.2)] transition-all flex items-center gap-2 cursor-pointer"
+                  className="py-3 px-8 rounded-xl text-sm font-semibold bg-[var(--color-accent)] text-black border-none hover:brightness-110 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(0,255,163,0.2)] transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Upload className="w-4 h-4" /> Choose file
                 </button>
                 <button
                   onClick={onDemo}
-                  className="py-3 px-8 rounded-xl text-sm font-medium bg-transparent text-[var(--text2)] border border-[var(--border2)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all flex items-center gap-2 cursor-pointer"
+                  className="py-3 px-8 rounded-xl text-sm font-medium bg-transparent text-[var(--color-text2)] border border-[var(--color-border2)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Play className="w-4 h-4" /> View demo
                 </button>
               </div>
 
               {/* Accepted formats */}
-              <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-[var(--text3)]">
+              <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-[var(--color-text3)]">
                 <FileText className="w-3 h-3" />
-                Accepts .html from <code className="text-[var(--text2)]">powercfg /batteryreport</code> · 100% local processing
+                Accepts .html from <code className="text-[var(--color-text2)]">powercfg /batteryreport</code> · 100% local processing
               </div>
             </motion.div>
           )}
@@ -146,7 +146,7 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mt-5 text-[var(--accent)] text-sm bg-[rgba(0,255,163,0.08)] border border-[rgba(0,255,163,0.2)] rounded-xl py-2.5 px-4 font-medium"
+              className="mt-5 text-[var(--color-accent)] text-sm bg-[rgba(0,255,163,0.08)] border border-[rgba(0,255,163,0.2)] rounded-xl py-2.5 px-4 font-medium"
             >
               {success}
             </motion.div>
@@ -160,7 +160,7 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="mt-5 text-[var(--danger)] text-sm bg-[rgba(255,79,79,0.08)] border border-[rgba(255,79,79,0.2)] rounded-xl py-2.5 px-4"
+              className="mt-5 text-[var(--color-danger)] text-sm bg-[rgba(255,79,79,0.08)] border border-[rgba(255,79,79,0.2)] rounded-xl py-2.5 px-4"
             >
               {error}
             </motion.div>

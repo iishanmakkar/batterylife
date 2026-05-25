@@ -23,19 +23,19 @@ export default function TipsGrid({ health }: { report: BatteryReport; health: He
     <div className="space-y-4">
       {urgentTips.length > 0 && (
         <div className="bg-[rgba(255,184,48,0.08)] border border-[rgba(255,184,48,0.2)] rounded-2xl p-4">
-          <h3 className="text-sm font-semibold text-[var(--warn)] mb-2">⚠️ Priority Recommendations</h3>
+          <h3 className="text-sm font-semibold text-[var(--color-warn)] mb-2">⚠️ Priority Recommendations</h3>
           {urgentTips.map((t, i) => (
-            <p key={i} className="text-xs text-[var(--text2)] mb-1">{t}</p>
+            <p key={i} className="text-xs text-[var(--color-text2)] mb-1">{t}</p>
           ))}
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {baseTips.map((tip, i) => (
-          <div key={i} className="bg-[var(--bg2)] border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--border2)] transition-all">
-            <div className="text-[var(--accent)] mb-2.5">{tip.icon}</div>
-            <h4 className="text-sm font-semibold text-[var(--text1)] mb-1">{tip.title}</h4>
-            <p className="text-xs text-[var(--text2)] leading-relaxed mb-2.5">{tip.desc}</p>
-            <div className="text-[11px] bg-[rgba(0,255,163,0.06)] border border-[rgba(0,255,163,0.15)] rounded-lg py-1.5 px-2.5 text-[var(--accent)]">
+          <div key={i} className="bg-[var(--color-bg2)] border border-[var(--color-border)] rounded-2xl p-5 hover:border-[var(--color-border2)] transition-all">
+            <div className="text-[var(--color-accent)] mb-2.5">{tip.icon}</div>
+            <h4 className="text-sm font-semibold text-[var(--color-text1)] mb-1">{tip.title}</h4>
+            <p className="text-xs text-[var(--color-text2)] leading-relaxed mb-2.5">{tip.desc}</p>
+            <div className="text-[11px] bg-[rgba(0,255,163,0.06)] border border-[rgba(0,255,163,0.15)] rounded-lg py-1.5 px-2.5 text-[var(--color-accent)]">
               💡 {tip.pro}
             </div>
           </div>

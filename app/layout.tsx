@@ -63,15 +63,15 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#080c12" />
-      </head>
-      <body className="font-sans antialiased">
-        {children}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6088632479455301"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
+      </head>
+      <body className="font-sans antialiased">
+        {children}
       </body>
     </html>
   );
