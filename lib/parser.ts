@@ -9,11 +9,20 @@ import type { BatteryReport, CapacityEntry, LifeEstimate, UsageEntry, DrainSessi
 /** Parse mWh value from text (handles mWh, Wh, plain numbers) */
 function parseMwh(text: string): number {
   const m1 = text.match(/([\d,]+)\s*mWh?/i);
-  if (m1) return parseInt(m1[1].replace(/,/g, ''));
+  if (m1) {
+    const parsed = parseInt(m1[1].replace(/,/g, ''));
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
   const m2 = text.match(/([\d,]+)\s*Wh/i);
-  if (m2) return parseInt(m2[1].replace(/,/g, '')) * 1000;
+  if (m2) {
+    const parsed = parseInt(m2[1].replace(/,/g, ''));
+    return Number.isNaN(parsed) ? 0 : parsed * 1000;
+  }
   const m3 = text.match(/([\d,]+)/);
-  if (m3) return parseInt(m3[1].replace(/,/g, ''));
+  if (m3) {
+    const parsed = parseInt(m3[1].replace(/,/g, ''));
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
   return 0;
 }
 
@@ -95,15 +104,20 @@ function parseTimeToHours(text: string): number {
 
 /** Convert duration string to hours (minimum 0.01) */
 function parseDurationHours(text: string): number {
+  const parts = text.trim().split(':');
+  if (parts.length === 3) {
+    const hrs = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
+    return Math.max(hrs, 0.01);
+  }
+  if (parts.length === 2) {
+    const hrs = parseInt(parts[0]) + parseInt(parts[1]) / 60;
+    return Math.max(hrs, 0.01);
+  }
   const h = text.match(/(\d+)\s*h/);
   const m = text.match(/(\d+)\s*m/);
   let hrs = 0;
   if (h) hrs += parseInt(h[1]);
   if (m) hrs += parseInt(m[1]) / 60;
-  // Also try HH:MM:SS format
-  const parts = text.trim().split(':');
-  if (parts.length === 3) hrs = parseInt(parts[0]) + parseInt(parts[1]) / 60 + parseInt(parts[2]) / 3600;
-  if (parts.length === 2) hrs = parseInt(parts[0]) + parseInt(parts[1]) / 60;
   return Math.max(hrs, 0.01);
 }
 

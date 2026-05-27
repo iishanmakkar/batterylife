@@ -1,6 +1,7 @@
 'use client';
 
 import { Heart } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Footer() {
   return (
@@ -58,8 +59,10 @@ export default function Footer() {
           <span className="font-mono" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--tx3)' }}>
             Built with <Heart style={{ width: 12, height: 12, color: 'var(--dng)', fill: 'var(--dng)' }} /> · BatteryIQ v4.0
           </span>
-          <span style={{ fontSize: 13, color: 'var(--tx3)' }}>
-            © {new Date().getFullYear()} BatteryIQ. Built for longevity.
+          <span style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, color: 'var(--tx3)' }}>
+            <Link href="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>Privacy</Link>
+            <Link href="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>Terms</Link>
+            <span>© {new Date().getFullYear()} BatteryIQ</span>
           </span>
         </div>
       </div>

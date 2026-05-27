@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Syne, JetBrains_Mono, Inter } from 'next/font/google';
 import ThirdPartyScripts from '@/components/ThirdPartyScripts';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import './globals.css';
 
 const syne = Syne({
@@ -25,6 +26,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://batterylife.vercel.app'),
   title: 'BatteryIQ — Professional Laptop Battery Health Analyzer',
   description:
     'Analyze your laptop battery health from Windows powercfg /batteryreport. Get professional health scores, degradation trends, AI-powered insights, and actionable recommendations. 100% private — runs locally in your browser.',
@@ -44,6 +46,21 @@ export const metadata: Metadata = {
       'Upload your Windows battery report and get instant professional health analysis with scores, charts, and AI-powered recommendations.',
     type: 'website',
     siteName: 'BatteryIQ',
+    images: [
+      {
+        url: '/og.svg',
+        width: 1200,
+        height: 630,
+        alt: 'BatteryIQ — Battery Health Analyzer',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BatteryIQ — Professional Laptop Battery Health Analyzer',
+    description:
+      'Analyze your Windows battery report with professional health scores, degradation trends, and recommendations.',
+    images: ['/og.svg'],
   },
   robots: { index: true, follow: true },
 };
@@ -70,7 +87,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ThirdPartyScripts />
-        {children}
+        <ErrorBoundary>{children}</ErrorBoundary>
       </body>
     </html>
   );

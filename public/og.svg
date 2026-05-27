@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080c12" />
+      <stop offset="50%" stop-color="#0d1117" />
+      <stop offset="100%" stop-color="#141b23" />
+    </linearGradient>
+    <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00ffa3" />
+      <stop offset="100%" stop-color="#00d4ff" />
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00ffa3" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#00d4ff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <circle cx="960" cy="120" r="220" fill="url(#glow)" />
+  <circle cx="240" cy="520" r="220" fill="url(#glow)" />
+
+  <rect x="80" y="120" width="1040" height="390" rx="28" fill="#0f1620" stroke="#1e2d3d" />
+
+  <g transform="translate(140 180)">
+    <rect x="0" y="0" width="72" height="72" rx="16" fill="url(#acc)" />
+    <text x="36" y="48" font-size="34" text-anchor="middle" fill="#080c12" font-family="Inter, Arial, sans-serif">⚡</text>
+  </g>
+
+  <text x="240" y="230" font-size="46" fill="#e8f0fe" font-family="Syne, Inter, Arial, sans-serif" font-weight="700">BatteryIQ</text>
+  <text x="240" y="276" font-size="20" fill="#8899aa" font-family="Inter, Arial, sans-serif">Professional Laptop Battery Health Analyzer</text>
+
+  <rect x="240" y="320" width="520" height="10" rx="5" fill="#1e2d3d" />
+  <rect x="240" y="320" width="360" height="10" rx="5" fill="url(#acc)" />
+
+  <text x="240" y="380" font-size="18" fill="#8899aa" font-family="Inter, Arial, sans-serif">
+    Instant health scores • Degradation trends • Actionable insights
+  </text>
+</svg>

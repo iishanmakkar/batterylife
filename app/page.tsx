@@ -105,10 +105,13 @@ function AppContent() {
 
   const handleAddReport = useCallback((newReports: BatteryReport[]) => {
     const normalized = normalizeReports(newReports);
-    setReports(normalized);
-    saveReports(normalized);
-    setAnalyzedCount(prev => prev + (newReports.length - reports.length));
-  }, [reports.length]);
+    setReports(prev => {
+      const next = [...prev, ...normalized];
+      saveReports(next);
+      return next;
+    });
+    setAnalyzedCount(prev => prev + normalized.length);
+  }, []);
 
   const handleRemoveReport = useCallback((index: number) => {
     setReports(prev => {

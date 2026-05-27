@@ -11,6 +11,8 @@ interface Props {
   onDemo: () => void;
 }
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 export default function UploadZone({ onReportParsed, onDemo }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -18,16 +20,33 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
   const [error, setError] = useState('');
 
   const processFile = useCallback((file: File) => {
+    setError('');
     if (!file.name.match(/\.html?$/i)) {
       setError('Please upload an .html file');
       return;
     }
+    if (file.type && !file.type.toLowerCase().includes('html')) {
+      setError('This file does not look like an HTML battery report.');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setError('File too large. Max size is 10MB.');
+      return;
+    }
     setLoading(true);
-    setError('');
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const report = parseReport(reader.result as string, file.name);
+        const hasData = report.battery.designCapacity > 0
+          || report.capacityHistory.length > 0
+          || report.lifeEstimates.length > 0
+          || report.weeklyUsage.length > 0
+          || report.drainSessions.length > 0;
+        if (!hasData) {
+          setError('This file does not look like a Windows battery report.');
+          return;
+        }
         onReportParsed(report);
       } catch {
         setError('Could not parse this file. Make sure it\'s a Windows battery report.');
@@ -62,6 +81,17 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
           onClick={() => fileRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              fileRef.current?.click();
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload battery report"
+          aria-describedby={error ? 'upload-error' : undefined}
+          aria-busy={loading}
           style={{
             position: 'relative', borderRadius: 24, cursor: 'pointer',
             transition: 'all 0.3s ease',
@@ -128,7 +158,7 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
 
           {/* Error */}
           {error && (
-            <p style={{ marginTop: 16, fontSize: 13, color: 'var(--dng)' }}>{error}</p>
+            <p id="upload-error" role="alert" aria-live="polite" style={{ marginTop: 16, fontSize: 13, color: 'var(--dng)' }}>{error}</p>
           )}
         </motion.div>
 
@@ -136,6 +166,7 @@ export default function UploadZone({ onReportParsed, onDemo }: Props) {
         <p style={{ textAlign: 'center', marginTop: 16, fontSize: 12, color: 'var(--tx3)' }}>
           Accepted: <code className="font-mono" style={{ color: 'var(--tx2)' }}>battery-report.html</code> generated via{' '}
           <code className="font-mono" style={{ color: 'var(--acc)', fontSize: 11 }}>powercfg /batteryreport</code>
+          <span style={{ marginLeft: 6 }}>· Max 10MB</span>
         </p>
       </div>
     </section>
