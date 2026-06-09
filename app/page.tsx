@@ -7,6 +7,7 @@ import HeroSection from '@/components/HeroSection';
 import UploadZone from '@/components/UploadZone';
 import Dashboard from '@/components/Dashboard';
 import FAQSection from '@/components/FAQSection';
+import ArticleSection from '@/components/ArticleSection';
 import Footer from '@/components/Footer';
 import AdUnit from '@/components/AdUnit';
 import type { BatteryReport } from '@/lib/types';
@@ -142,6 +143,7 @@ function AppContent() {
             <div className="ad-slot-wrap" style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
               <AdUnit slot="8901234567" format="horizontal" />
             </div>
+            <ArticleSection />
           </>
         )}
 
