@@ -93,7 +93,7 @@ The project is organized into logical directories to facilitate development and 
 │   ├── detection.ts      # Contains advanced detection algorithms (e.g., fake battery)
 │   ├── export.ts         # Manages PDF, JSON, and image export functionalities
 │   └── types.ts          # Defines TypeScript interfaces and types for the application
-└── public/               # Static assets (e.g., favicon, ads.txt, service worker)
+└── public/               # Static assets (e.g., favicon, service worker)
 ```
 
 ## 🔐 Privacy Assurance

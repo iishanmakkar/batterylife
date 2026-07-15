@@ -21,7 +21,6 @@ import DeviceInfoCard from './DeviceInfoCard';
 import CompareView from './CompareView';
 import TipsGrid from './TipsGrid';
 import ExportModal from './ExportModal';
-import AdUnit from './AdUnit';
 
 import CapacityChart from './charts/CapacityChart';
 import BatteryLifeChart from './charts/BatteryLifeChart';
@@ -184,7 +183,6 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
       {activeTab === 'overview' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <ScoreCard report={report} health={health} />
-          <AdUnit slot="1234567890" format="horizontal" className="my-5" />
 
           {/* Metrics Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
@@ -271,7 +269,6 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               <p style={{ fontSize: 12, color: 'var(--tx2)', marginTop: 4 }}>Based on current degradation rate</p>
             </div>
           </div>
-          <AdUnit slot="2345678901" format="auto" className="my-5" />
         </div>
       )}
 
@@ -288,7 +285,6 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
             <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--tx3)' }}>No capacity history data available</div>
           )}
           {report.lifeEstimates.length > 0 && <BatteryLifeChart data={report.lifeEstimates} />}
-          <AdUnit slot="3456789012" format="auto" />
           {report.capacityHistory.length >= 3 && health.regression && (
             <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, padding: 20 }}>
               <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)', marginBottom: 12 }}>Degradation Analysis</h3>
@@ -323,7 +319,6 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
             {report.weeklyUsage.length > 0 && <UsageChart data={report.weeklyUsage} />}
             <DonutChart batteryHours={batHours} acHours={acHours} />
           </div>
-          <AdUnit slot="4567890123" format="auto" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
             <MetricCard icon={<Battery className="w-5 h-5 text-[var(--color-accent)]" />} label="Battery Time" value={`${batHours.toFixed(1)}h`} sub="Total on battery" pct={(batHours / Math.max(batHours + acHours, 1)) * 100} colorClass="" barColor="#00ffa3" />
             <MetricCard icon={<Upload className="w-5 h-5 text-[var(--color-accent2)]" />} label="AC Time" value={`${acHours.toFixed(1)}h`} sub="Total on AC" pct={(acHours / Math.max(batHours + acHours, 1)) * 100} colorClass="" barColor="#00d4ff" />
@@ -354,7 +349,6 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
                 {detailStat('Average Draw', `${(avgDrainRate / 1000).toFixed(1)} W`, 'mean session rate')}
                 {detailStat('Peak Draw', `${(maxDrainRate / 1000).toFixed(1)} W`, 'highest observed load')}
               </div>
-              <AdUnit slot="5678901234" format="auto" />
               <div style={{ background: 'var(--bg2)', border: '1px solid var(--bdr)', borderRadius: 16, overflow: 'hidden' }}>
                 <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--bdr)' }}>
                   <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--tx1)' }}>Drain Session Details</h3>
@@ -408,7 +402,6 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
             <>
               <CompareChart reports={reports} />
               <CompareView reports={reports} />
-              <AdUnit slot="6789012345" format="auto" />
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '64px 0' }}>
@@ -434,7 +427,6 @@ export default function Dashboard({ reports, onAddReport, onRemoveReport, onClos
               {insights.map((ins, i) => <InsightCard key={i} insight={ins} />)}
             </div>
           )}
-          <AdUnit slot="7890123456" format="auto" />
           <TipsGrid report={report} health={health} />
         </div>
       )}

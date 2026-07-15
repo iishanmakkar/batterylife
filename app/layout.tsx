@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Syne, JetBrains_Mono, Inter } from 'next/font/google';
-import ThirdPartyScripts from '@/components/ThirdPartyScripts';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import './globals.css';
 
@@ -78,15 +77,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script src="https://quge5.com/88/tag.min.js" data-zone="243065" async data-cfasync="false"></script>
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#080c12" />
-        <meta name="google-adsense-account" content="ca-pub-6088632479455301" />
-        <meta name="monetag" content="58fc10d2e262143b783c9aecaaa355d0" />
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6088632479455301" crossOrigin="anonymous"></script>
       </head>
       <body className="font-sans antialiased">
-        <ThirdPartyScripts />
         <ErrorBoundary>{children}</ErrorBoundary>
       </body>
     </html>

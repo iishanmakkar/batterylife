@@ -9,7 +9,6 @@ import Dashboard from '@/components/Dashboard';
 import FAQSection from '@/components/FAQSection';
 import ArticleSection from '@/components/ArticleSection';
 import Footer from '@/components/Footer';
-import AdUnit from '@/components/AdUnit';
 import type { BatteryReport } from '@/lib/types';
 import { saveReports, loadReports, getAnalyzedCount, incrementCount } from '@/lib/storage';
 import { normalizeReport, normalizeReports } from '@/lib/normalize';
@@ -140,9 +139,6 @@ function AppContent() {
         {!showDashboard && (
           <>
             <UploadZone onReportParsed={handleReportParsed} onDemo={handleDemo} />
-            <div className="ad-slot-wrap" style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
-              <AdUnit slot="8901234567" format="horizontal" />
-            </div>
             <ArticleSection />
           </>
         )}
@@ -161,14 +157,7 @@ function AppContent() {
         <div style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px' }}>
           <div style={{ height: 1, background: 'linear-gradient(to right, transparent, var(--bdr), transparent)' }} />
         </div>
-
-        <div className="ad-slot-wrap" style={{ maxWidth: 896, margin: '0 auto', padding: '32px 24px 0' }}>
-          <AdUnit slot="9012345678" format="horizontal" />
-        </div>
         <FAQSection />
-        <div className="ad-slot-wrap" style={{ maxWidth: 896, margin: '0 auto', padding: '0 24px 48px' }}>
-          <AdUnit slot="0123456789" format="horizontal" />
-        </div>
       </main>
 
       <Footer />
