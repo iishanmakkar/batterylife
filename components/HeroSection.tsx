@@ -8,7 +8,7 @@ export default function HeroSection({ analyzedCount }: { analyzedCount: number }
   const [copied, setCopied] = useState(false);
 
   const copyCmd = () => {
-    navigator.clipboard.writeText('powercfg /batteryreport /output "%USERPROFILE%\\battery-report.html"')
+    navigator.clipboard.writeText('powercfg /batteryreport /output "$env:USERPROFILE\\battery-report.html"')
       .then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); })
       .catch(() => {});
   };
@@ -153,7 +153,7 @@ export default function HeroSection({ analyzedCount }: { analyzedCount: number }
         }}>
           <span style={{ color: 'var(--acc)', fontSize: 18, fontWeight: 700, flexShrink: 0 }}>›</span>
           <code style={{ color: 'var(--tx1)', fontSize: 13, flex: 1, wordBreak: 'break-all' as const }}>
-            powercfg /batteryreport /output &quot;%USERPROFILE%\battery-report.html&quot;
+            powercfg /batteryreport /output &quot;$env:USERPROFILE\battery-report.html&quot;
           </code>
           <button
             onClick={copyCmd}

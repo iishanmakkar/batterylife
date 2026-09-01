@@ -35,7 +35,7 @@ Getting started with BatteryIQ is simple and straightforward.
 Open PowerShell as an Administrator and execute the following command to generate your `battery-report.html` file:
 
 ```powershell
-powercfg /batteryreport /output "%USERPROFILE%\battery-report.html"
+powercfg /batteryreport /output "$env:USERPROFILE\battery-report.html"
 ```
 
 ### 2. Upload to BatteryIQ
