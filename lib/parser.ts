@@ -165,44 +165,52 @@ function parseHTMLTables(doc: Document): {
 
     // ── Battery Info Table (Design Capacity, Full Charge, Cycle Count) ──
     // Some reports put specs in a 2-column table: label | value
-    for (const row of rows) {
-      const cells = row.querySelectorAll('td, th');
-      if (cells.length >= 2) {
-        const label = normalizeLabel(cells[0].textContent ?? '');
-        const value = cleanCellText(cells[1].textContent ?? '');
-        if (isInstalledBatteryTable && label === 'name' && value && !result.batteryNameFromTable) {
-          result.batteryNameFromTable = value;
-        }
-        if (isInstalledBatteryTable && label === 'manufacturer' && value && !result.manufacturerFromTable) {
-          result.manufacturerFromTable = value;
-        }
-        if (isInstalledBatteryTable && label === 'serial number' && value && !result.serialFromTable) {
-          result.serialFromTable = value;
-        }
-        if (isInstalledBatteryTable && label === 'chemistry' && value && !result.chemistryFromTable) {
-          result.chemistryFromTable = value;
-        }
-        if (label.includes('design capacity')) {
-          const v = parseMwh(value);
-          if (v > 0) result.designCapacityFromTable = v;
-        }
-        if (label.includes('full charge capacity')) {
-          const v = parseMwh(value);
-          if (v > 0) result.fullChargeFromTable = v;
-        }
-        if (label.includes('cycle count') || label === 'cycles' || label === 'cycle') {
-          const v = parseCycleCount(value);
-          if (v !== null) {
-            result.cycleCountFromTable = v;
-            result.cycleCountKnownFromTable = true;
-          }
-        }
+    let isHorizontal = false;
+    if (isInstalledBatteryTable && rows.length >= 2) {
+      const headerCells = Array.from(rows[0].querySelectorAll('td, th')).map(cell => normalizeLabel(cell.textContent ?? ''));
+      if (headerCells.some(h => h.includes('design capacity') || h.includes('full charge capacity'))) {
+        isHorizontal = true;
       }
     }
 
-    // Some OEM/Windows versions render installed batteries horizontally:
-    // header labels in the first row, battery values in following row(s).
-    if (isInstalledBatteryTable && rows.length >= 2) {
+    if (!isHorizontal) {
+      for (const row of rows) {
+        const cells = row.querySelectorAll('td, th');
+        if (cells.length >= 2) {
+          const label = normalizeLabel(cells[0].textContent ?? '');
+          const value = cleanCellText(cells[1].textContent ?? '');
+          if (isInstalledBatteryTable && label === 'name' && value && !result.batteryNameFromTable) {
+            result.batteryNameFromTable = value;
+          }
+          if (isInstalledBatteryTable && label === 'manufacturer' && value && !result.manufacturerFromTable) {
+            result.manufacturerFromTable = value;
+          }
+          if (isInstalledBatteryTable && label === 'serial number' && value && !result.serialFromTable) {
+            result.serialFromTable = value;
+          }
+          if (isInstalledBatteryTable && label === 'chemistry' && value && !result.chemistryFromTable) {
+            result.chemistryFromTable = value;
+          }
+          if (label.includes('design capacity')) {
+            const v = parseMwh(value);
+            if (v > 0) result.designCapacityFromTable += v;
+          }
+          if (label.includes('full charge capacity')) {
+            const v = parseMwh(value);
+            if (v > 0) result.fullChargeFromTable += v;
+          }
+          if (label.includes('cycle count') || label === 'cycles' || label === 'cycle') {
+            const v = parseCycleCount(value);
+            if (v !== null) {
+              result.cycleCountFromTable = Math.max(result.cycleCountFromTable, v);
+              result.cycleCountKnownFromTable = true;
+            }
+          }
+        }
+      }
+    } else {
+      // Some OEM/Windows versions render installed batteries horizontally:
+      // header labels in the first row, battery values in following row(s).
       const headerCells = Array.from(rows[0].querySelectorAll('td, th')).map(cell => normalizeLabel(cell.textContent ?? ''));
       const valueRows = Array.from(rows).slice(1);
       const cycleIdx = headerCells.findIndex(label => label.includes('cycle count') || label === 'cycles' || label === 'cycle');
@@ -217,20 +225,20 @@ function parseHTMLTables(doc: Document): {
         const values = Array.from(row.querySelectorAll('td, th')).map(cell => cleanCellText(cell.textContent ?? ''));
         if (values.length < 2) continue;
 
-        if (cycleIdx >= 0 && values[cycleIdx] && !result.cycleCountKnownFromTable) {
+        if (cycleIdx >= 0 && values[cycleIdx]) {
           const v = parseCycleCount(values[cycleIdx]);
           if (v !== null) {
-            result.cycleCountFromTable = v;
+            result.cycleCountFromTable = Math.max(result.cycleCountFromTable, v);
             result.cycleCountKnownFromTable = true;
           }
         }
-        if (designIdx >= 0 && values[designIdx] && result.designCapacityFromTable === 0) {
+        if (designIdx >= 0 && values[designIdx]) {
           const v = parseMwh(values[designIdx]);
-          if (v > 0) result.designCapacityFromTable = v;
+          if (v > 0) result.designCapacityFromTable += v;
         }
-        if (fullIdx >= 0 && values[fullIdx] && result.fullChargeFromTable === 0) {
+        if (fullIdx >= 0 && values[fullIdx]) {
           const v = parseMwh(values[fullIdx]);
-          if (v > 0) result.fullChargeFromTable = v;
+          if (v > 0) result.fullChargeFromTable += v;
         }
         if (nameIdx >= 0 && values[nameIdx] && !result.batteryNameFromTable) result.batteryNameFromTable = values[nameIdx];
         if (mfrIdx >= 0 && values[mfrIdx] && !result.manufacturerFromTable) result.manufacturerFromTable = values[mfrIdx];

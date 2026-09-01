@@ -22,6 +22,18 @@ export default function TipsGrid({ health }: { report: BatteryReport; health: He
 
   return (
     <div className="space-y-5">
+      <div className="bg-[rgba(0,212,255,0.08)] border border-[rgba(0,212,255,0.3)] rounded-2xl p-5">
+        <h3 className="text-sm font-semibold text-[#00d4ff] mb-2 flex items-center gap-2">
+          <Zap className="w-4 h-4" /> Want to save your battery?
+        </h3>
+        <p className="text-xs text-[var(--color-text2)] leading-relaxed mb-4">
+          Download WinBatterySaver to automatically optimize your Windows settings, reduce power consumption, and significantly extend your laptop's battery life.
+        </p>
+        <a href="https://github.com/iishanmakkar/WinBatterySaver" target="_blank" rel="noopener noreferrer" className="inline-block bg-[linear-gradient(135deg,#00ffa3,#00d4ff)] text-black font-semibold text-xs px-4 py-2 rounded-lg no-underline hover:opacity-90 transition-opacity">
+          Download WinBatterySaver
+        </a>
+      </div>
+
       {urgentTips.length > 0 && (
         <div className="bg-[rgba(255,184,48,0.08)] border border-[rgba(255,184,48,0.2)] rounded-2xl p-5">
           <h3 className="text-sm font-semibold text-[var(--color-warn)] mb-3">Priority Recommendations</h3>

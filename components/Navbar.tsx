@@ -46,17 +46,34 @@ export default function Navbar({ reportCount }: { reportCount?: number }) {
           )}
 
         {/* Theme toggle */}
-        <button
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-          style={{
-            width: 40, height: 40, borderRadius: 12, cursor: 'pointer',
-            border: '1px solid var(--bdr)', background: 'transparent', color: 'var(--tx2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-            {theme === 'dark' ? <Sun style={{ width: 18, height: 18 }} /> : <Moon style={{ width: 18, height: 18 }} />}
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* WinBatterySaver Promo */}
+          <a
+            href="https://github.com/iishanmakkar/WinBatterySaver"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 16px', borderRadius: 8,
+              fontSize: 13, fontWeight: 600, textDecoration: 'none',
+              background: 'linear-gradient(135deg, #00ffa3, #00d4ff)',
+              color: '#000', border: 'none',
+            }}
+          >
+            🔋 Want to save battery? Download WinBatterySaver!
+          </a>
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+            style={{
+              width: 40, height: 40, borderRadius: 12, cursor: 'pointer',
+              border: '1px solid var(--bdr)', background: 'transparent', color: 'var(--tx2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+              {theme === 'dark' ? <Sun style={{ width: 18, height: 18 }} /> : <Moon style={{ width: 18, height: 18 }} />}
+            </button>
+          </div>
         </div>
       </div>
     </nav>
